@@ -1,0 +1,51 @@
+main
+{
+	padding: 1em 10em 0 10em;
+}
+
+.category
+{
+	background: #272822;
+	border-radius: .2em;
+	flex-basis: 20%;
+	padding: 1em;
+	margin: 3em 3em;
+
+	display: flex;
+	flex-flow: column;
+}
+
+.category p
+{
+	color: #A6E22E;
+	font-family: "Menlo", sans-serif;
+	margin-top: 0;
+}
+
+.category ul
+{
+	margin: 0;
+	padding: 0;
+}
+
+.category li
+{
+	list-style: none;
+}
+
+.category a
+{
+	color: #66D9EF;
+	display: block;
+	text-decoration: none;
+}
+
+.category a:hover
+{
+	color: #F92672;
+}
+
+.web
+{
+	margin-top: .5em;
+}

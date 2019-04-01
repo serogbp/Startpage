@@ -1,0 +1,14 @@
+#search_text
+{
+    background: transparent;
+    height: 35px;
+    width: 500px;
+    border: 1px solid #E1E1E1;
+
+    margin: 20px auto 2em;
+    padding: 5px 9px;
+    
+    color: #E1E1E1;
+    font: 2em "Helvetica Neue", sans-serif;
+    text-align: center;
+}
