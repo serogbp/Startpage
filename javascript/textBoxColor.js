@@ -1,5 +1,4 @@
-function textBoxColor ()
-{
+function textBoxColor(){
 	var colores = ["#F92672", "#66D9EF", "#A6E22E", "#FD971F"];
 
 	var colorRamdom = colores[Math.floor(Math.random() * colores.length)];

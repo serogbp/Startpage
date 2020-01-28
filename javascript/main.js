@@ -12,41 +12,33 @@ const ID_JSON_TEXTBOX = "jsonTextBox";
 
 var draggable;
 
-window.onload = function()
-{
+window.onload = function(){
 	init();
 }
 
-function init()
-{
+function init(){
 	update();
 }
 
-function update()
-{
+function update(){
 	paintWebs();
 }
 
-class Web
-{
-	constructor(name, url, category)
-	{
+class Web{
+	constructor(name, url, category){
 		this.name = name;
 		this.url = url;
 		this.category = category;
 	}
 }
 
-class WebLink
-{
-	constructor(name, url, category)
-	{
+class WebLink{
+	constructor(name, url, category){
 		this.web = new Web(name, url, category)
 		this.element = this.createElement()
 	}
 	
-	createElement()
-	{
+	createElement(){
 		// List item
 		//var li = document.createElement("li");
 		//li.setAttribute("draggable", true);
@@ -67,16 +59,13 @@ class WebLink
 	}
 }
 
-class Category
-{
-	constructor(category)
-	{
+class Category{
+	constructor(category){
 		this.category = category;
 		this.element = this.createElement()
 	}
 
-	createElement()
-	{
+	createElement(){
 		// Container
 		var section = document.createElement("section");
 		section.setAttribute("id", this.category);
@@ -109,30 +98,25 @@ class Category
 	}
 }
 
-class WebJson
-{
-	constructor()
-	{
+class WebJson{
+	constructor(){
 		this.array = [];
 	}
 
 	// Get webs stored in Local Storage 
 	// Return JSON array
 	// If there's no data, return array with template
-	getWebs()
-	{
+	getWebs(){
 		var array = localStorage.json;
 		return array = array == null ? this.template() : JSON.parse(array);
 	}
 
-	setWebs()
-	{
+	setWebs(){
 		localStorage.json = JSON.stringify(this.array);
 	}
 
 	// Returns array with one Web object as example
-	template()
-	{
+	template(){
 		var array = [];
 		array.push(new Web("Youtube", "https://www.youtube.com", "Entertainment"));
 		return array;

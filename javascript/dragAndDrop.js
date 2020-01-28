@@ -1,46 +1,37 @@
-function dragStart()
-{
+function dragStart(){
 	draggable = this;
 }
 
-function dragEnd()
-{
+function dragEnd(){
 }
 
-function dragOver(e)
-{
+function dragOver(e){
 	e.preventDefault();
 }
 
-function dragEnter(e)
-{
+function dragEnter(e){
 	e.preventDefault();
 }
 
-function dragLeave()
-{
+function dragLeave(){
 }
 
-function dragDrop(e)
-{
+function dragDrop(e){
 	insertNodeAfter(draggable, this);
 	e.preventDefault();
 	exportHtmlToJson();
 }
 
-function dragDropOnCategory (e)
-{
+function dragDropOnCategory (e){
 	this.append(draggable);
 	e.preventDefault();
 	exportHtmlToJson();
 }
 
-function insertNodeBefore(newNode, referenceNode)
-{
+function insertNodeBefore(newNode, referenceNode){
 	referenceNode.parentNode.insertBefore(newNode, referenceNode);
 }
 
-function insertNodeAfter(newNode, referenceNode)
-{
+function insertNodeAfter(newNode, referenceNode){
 	referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
