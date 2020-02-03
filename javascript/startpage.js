@@ -78,28 +78,34 @@ class Category{
 	}
 }
 
-class Json{
+class LocalStorageHelper{
 	constructor(){
-		this.array = [];
+		this.array = this.getWebs();
 	}
 
 	// Get webs stored in Local Storage 
 	// Return JSON array
 	// If there's no data, return array with template
 	getWebs(){
-		var array = localStorage.json;
-		return array = array == null ? this.setTemplate() : JSON.parse(array);
+		return this.array = (localStorage.json == null) ? this.setTemplate() : JSON.parse(localStorage.json);	
 	}
 
-	setWebs(){
-		localStorage.json = JSON.stringify(this.array);
+	// Sets json with parameter, losing previous json data
+	setJson(json){
+		localStorage.json = JSON.stringify(json);
+		this.getWebs();
 	}
 
 	// Returns array with one Web object as example
 	setTemplate(){
-		var array = [];
-		array.push(new Web("Youtube", "https://www.youtube.com", "Entertainment"));
-		return array;
+		var a = [];
+		a.push(new Web("Youtube", "https://www.youtube.com", "Entertainment"));
+		return a
+	}
+
+	insertWeb(web){
+		this.array.push(web);
+		localStorage.json = JSON.stringify(this.array);	
 	}
 }
 
@@ -108,21 +114,28 @@ class Json{
 ## CONSTANTS & VARIABLES ##
 ###########################
 */
-const ID_INPUT_CONTAINER = "inputContainer";
-const ID_INPUT_NAME = "inputName";
-const ID_INPUT_URL = "inputUrl";
-const ID_INPUT_CATEGORY = "inputCategory";
-const ID_JSON_TEXTBOX = "jsonTextBox";
-const ID_WEB_CONTAINER = "webContainer";
-
+let INPUT_CONTAINER;
+let INPUT_NAME;
+let INPUT_URL;
+let INPUT_CATEGORY;
+let JSON_TEXTBOX;
+let WEB_CONTAINER;
+let SEARCH_TEXT;
+let IMPORT_BUTTON;
+let EXPORT_BUTTON;
+let FILE_EXPLORER;
+let arrayColors = ["#F92672", "#66D9EF", "#A6E22E", "#FD971F"];
 const CLASS_INPUT_CONTAINER_INVISIBLE = "invisible";
 const CLASS_INPUT_CONTAINER_VISIBLE = "visible";
 const CLASS_WEB = "web";
 const CLASS_CATEGORY = "category";
 const CLASS_CATEGORY_LIST = "categoryList";
 
+var localStorageHelper;
+
 // Stores the current DOM element being dragged
 var draggable;
+
 
 /*
 ###############
@@ -131,12 +144,30 @@ var draggable;
 */
 
 window.onload = function(){
-	update();
-	fileUploaderListener();
+	if(checkLocalStorageCompatibility()){
+
+		localStorageHelper = new LocalStorageHelper();
+		loadElements();
+		update();
+		fileUploaderListener();	
+	}
 }
 
 function update(){
 	paintWebs();
+}
+
+function loadElements(){
+	INPUT_CONTAINER = document.getElementById("inputContainer");
+	INPUT_NAME = document.getElementById("inputName");
+	INPUT_URL = document.getElementById("inputUrl");
+	INPUT_CATEGORY = document.getElementById("inputCategory");
+	JSON_TEXTBOX = document.getElementById("jsonTextBox");
+	WEB_CONTAINER = document.getElementById("webContainer");
+	SEARCH_TEXT = document.getElementById("search_text");
+	IMPORT_BUTTON = document.getElementById("importButton");
+	EXPORT_BUTTON = document.getElementById("exportButton");
+	FILE_EXPLORER = document.getElementById("fileExplorer");
 }
 
 //
@@ -149,12 +180,6 @@ function deleteChildNodes(element){
 	}
 }
 
-// TODO rename
-// TODO ver si se ejecuta
-function submit(){
-	return false;
-}
-
 // Return actual date with format YYYY-MM-DD
 function getToday() {
 	var date = new Date();
@@ -162,11 +187,18 @@ function getToday() {
 }
 
 function textBoxColor(){
-	var colores = ["#F92672", "#66D9EF", "#A6E22E", "#FD971F"];
+	SEARCH_TEXT.style.border = "1px solid " + arrayColors[Math.floor(Math.random() * arrayColors.length)];
+}
 
-	var colorRamdom = colores[Math.floor(Math.random() * colores.length)];
-
-	document.getElementById("search_text").style.border = "1px solid " + colorRamdom;
+function checkLocalStorageCompatibility(){
+	var compatible = false;
+	if (typeof(Storage) !== "undefined"){
+		compatible = true;
+	}else{
+		alert();
+		compatible = false;
+	}
+	return compatible;
 }
 
 //
@@ -176,20 +208,15 @@ function textBoxColor(){
 // Paint webs in the container div
 function paintWebs(){
 	try {
-		var json = new Json();
-		json.array = json.getWebs();
-
-		var container = document.getElementById(ID_WEB_CONTAINER);
-		
-		deleteChildNodes(container);
+		deleteChildNodes(WEB_CONTAINER);
 
 		// Create categories with their webs
-		for(let item of json["array"]){
+		for(let item of localStorageHelper["array"]){
 			var category = document.getElementById(item.category);
 
 			// Create category if not exists
 			if(category == null){
-				container.appendChild(new Category(item.category).element);
+				WEB_CONTAINER.appendChild(new Category(item.category).element);
 				category = document.getElementById(item.category);
 			}
 
@@ -197,35 +224,27 @@ function paintWebs(){
 			category.appendChild(new Link(item.name, item.url, item.category).element);
 		}
 
-		exportJsonToText(json);
+		// Writes json into an input in String format
+		JSON_TEXTBOX.value = JSON.stringify(localStorageHelper.array);
 
 	} catch(e) {
 		alert(e.message);
 	}
+	//event.preventDefault();
 }
 
 // Save webs to localStorage in JSON format
 function exportHtmlToJson(){
-	var json = new Json();
 	var categories = document.querySelectorAll(".category")
 
 	// Iterate each categories
 	for(let category of categories){
-		var webs = category.querySelectorAll(".web")
+		var webs = category.querySelectorAll(".web");
 
 		// Iterate each web from a category
 		for(let web of webs){
-			// Save web to the json array
-			json.array.push(new Web(web.text, web.id, category.id))
+			localStorageHelper.insertWeb(new Web(web.text, web.id, category.id));
 		}
-	}
-
-	// Save webs to localStorage
-	try {
-		json.setWebs();
-	} 
-	catch(e) {
-		alert(e.message);
 	}
 }
 
@@ -235,58 +254,30 @@ function exportHtmlToJson(){
 
 // Add web from inputs to the Local Storage
 // TODO rename insertWeb
-// TODO check first local storage support
-function addWeb_onClick(){
+function insertWeb(){
 	try {
-		var name = document.getElementById(ID_INPUT_NAME).value;
-		var url = document.getElementById(ID_INPUT_URL).value;
-		var category = document.getElementById(ID_INPUT_CATEGORY).value;
-
 		// Check all inputs are filled
-		if (name != "" && url != "" && category != "") {
-			// Check browser's LocalStorage compatibility
-			if (typeof(Storage) !== "undefined"){
-				var json = new Json();
-				json.array = json.getWebs();
+		if (INPUT_NAME != "" && INPUT_URL != "" && INPUT_CATEGORY != "") {
 
-				// Create Web object with data from inputs
-				var newWeb = new Web(
-					name,
-					url,
-					category
-					);
+			// Create Web object with data from inputs
+			localStorageHelper.insertWeb(new Web(
+				INPUT_NAME.value,
+				INPUT_URL.value,
+				INPUT_CATEGORY.value
+			));
 
-				// Add new web
-				json.array.push(newWeb);
-
-				// Save JSON file
-				localStorage.json = JSON.stringify(json.array);
-
-				paintWebs();
-			} 
-			else{
-				alert("Sorry! No Web Storage support..");
-			}
-		}	
-	} 
+			paintWebs();
+		}
+	}
 	catch(e) {
 		alert(e.message);
 	}
 }
 
-// Writes json.array into an input in String format
-// TODO rename exportJsonToInput
-function exportJsonToText(json){
-	var textBox = document.getElementById(ID_JSON_TEXTBOX);
-	textBox.value = JSON.stringify(json.array);
-}
-
+// Imports json from the import textBox input
 function importJSON_onClick(){
-	var json = new Json();
-	var textBox = document.getElementById(ID_JSON_TEXTBOX);
 	try {
-		json.array = JSON.parse(textBox.value);
-		json.setWebs();
+		localStorageHelper.setJson(JSON.parse(JSON_TEXTBOX.value));
 	} 
 	catch(e) {
 		alert(e.message);
@@ -295,6 +286,7 @@ function importJSON_onClick(){
 	paintWebs();
 }
 
+// Shows/hides the menu
 function dropDownMenu_onClick(){
 	var element = document.getElementById(ID_INPUT_CONTAINER);
 
@@ -306,35 +298,41 @@ function dropDownMenu_onClick(){
 	}
 }
 
-// Initialice listener for changes in the file input
-// When a file is selected, renplaces the actual websites with the ones readed
-function fileUploaderListener() {
-	var choose = document.getElementById("importInput");
+function openFileExplorer(){
+	FILE_EXPLORER.click();
+}
 
-	choose.addEventListener("change", function(){
-		var reader = new FileReader();
-		reader.onload = function(event){
-			try {
-				json.array = JSON.parse(event.target.result);
-				json.setWebs();
-			} 
-			catch(e) {
-				alert(e.message);
-			}
-			
+// Initialice listener for changes in the file input
+// When a file is selected, reemplaces the actual websites with the ones readed
+function fileUploaderListener() {
+	FILE_EXPLORER.addEventListener("change", function(){
+	var reader = new FileReader();
+
+	reader.onload = function(event){
+		try {
+			localStorageHelper.setJson(JSON.parse(event.target.result));
 			paintWebs();
+		} 
+		catch(e) {
+			alert(e.message);
 		}
-		reader.readAsText(event.target.files[0]);
-	});
+	}
+
+	reader.readAsText(event.target.files[0]);
+});
 }
 
 // Exports the websites in a .json file
-function exportJson (json) {
-	var data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(json));
-	var link = document.getElementById("downloadLink");
-	link.setAttribute("href", data);
-	link.setAttribute("download", getToday()+ "_startPage.json")
-	link.click();
+function exportJson() {
+	try{
+		var data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(localStorageHelper.array));
+		var link = document.getElementById("downloadLink");
+		link.setAttribute("href", data);
+		link.setAttribute("download", getToday()+ "_startPage.json")
+		link.click();
+	}catch(e){
+		alert(e.message);
+	}
 }
 
 //
