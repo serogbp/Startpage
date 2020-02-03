@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta charset="UTF-8">
 	<title>Start page</title>
-	<script src="javascript/combiner/combiner.js" type="text/javascript" charset="utf-8" async defer></script>
+	<script src="javascript/startpage.js" type="text/javascript" charset="utf-8"></script>
 	<link rel="stylesheet" type="text/css" href="style/combiner/combiner.css">
 </head>
 <body>
@@ -11,20 +12,27 @@
 		<input type="checkbox" id="checkboxDropDown"> 
 
 		<!-- Add web inputs -->
-		<form class="start">
+		<form class="start" action="javascript:void(0);">
 			<input id="inputName" type="text" name="name" placeholder="Name" required>
 
 			<input id="inputUrl" type="text" name="url" placeholder="Url" required>
 
 			<input id="inputCategory" type="text" name="category" placeholder="Category" required>
 
-			<button onclick="addWeb_onClick()">Add</button>
+			<button onclick="insertWeb()">Add</button>
 		</form>
 
 		<!-- Import/Restore json -->
+		<form action="javascript:void(0);">
+			<button id="exportButton" onclick="exportJson()">Export</button>
+			<a id="downloadLink" style="display:none"></a>
+			<button id="importButton" onclick="openFileExplorer()">Import</button>
+			<input type="file" name="import" id="fileExplorer" accept=".json">
+		</form>
+
 		<form>
 			<input id="jsonTextBox" type="text" placeholder="Import JSON">
-			<button type="button" onclick="importJSON_onClick()">Import</button>
+			<button type="button" onclick="importJSON_onClick()">Import_old</button>
 		</form>
 	</nav>
 
