@@ -88,12 +88,14 @@ class LocalStorageHelper{
 	// If there's no data, return array with template
 	getWebs(){
 		let webs = (localStorage.json == null) ? this.setTemplate() : JSON.parse(localStorage.json);
+		console.log(webs.length + " Webs loaded from LocalStorage");
 		return webs;
 	}
 
 	// Sets json with parameter, losing previous json data
 	setJson(json){
 		localStorage.json = JSON.stringify(json);
+		console.log(json.length + " webs imported")
 		this.getWebs();
 	}
 
@@ -166,6 +168,7 @@ window.onload = function(){
 }
 
 function init(){
+	console.log("Init");
 
 	localStorageHelper = new LocalStorageHelper();
 	loadElements();
@@ -173,6 +176,8 @@ function init(){
 	update();
 }
 function update(){
+	console.log("Update");
+
 	deleteChildNodes(WEB_CONTAINER);
 	paintWebs();
 
@@ -198,8 +203,7 @@ function loadElements(){
 //
 
 function deleteChildNodes(element){
-	while (element.firstChild){
-		element.removeChild(element.firstChild)
+	console.log("deleteChildNodes");
 	try{
 		while (element.firstChild){
 			element.removeChild(element.firstChild);
@@ -227,6 +231,8 @@ function checkLocalStorageCompatibility(){
 		alert();
 		compatible = false;
 	}
+
+	console.log("LocalStorage compatible: " + compatible );
 	return compatible;
 }
 
@@ -236,6 +242,7 @@ function checkLocalStorageCompatibility(){
 
 // Append Link and Category objects in the container div
 function paintWebs(){
+	console.group("paintWebs");
 
 	try {
 		// Create categories with their webs
@@ -251,18 +258,26 @@ function paintWebs(){
 			// Append web to the <ul> of the category
 			category.appendChild(new Link(web.name, web.url, web.category).element);
 		}
+		console.log(localStorageHelper.array.length + " webs loaded in screen");
 	} catch(e) {
+		console.error(e);
 		alert(e.message);
 	}
+	console.groupEnd();
 }
 
 // Save webs to localStorage in JSON format
 function exportHtmlToJson(){
+	console.group("exportHtmlToJson");
+
 	var categories = document.querySelectorAll(".category");
+	console.log(categories.length + " categories found");
+
 
 	// Iterate each categories
 	for(let category of categories){
 		var webs = category.querySelectorAll(".web");
+		console.log(webs.length + " webs found for " + category.id);
 
 		var webs = [];
 		// Iterate each web from a category
@@ -349,6 +364,7 @@ function fileUploaderListener() {
 
 // Exports the websites in a .json file
 function exportJson() {
+	console.group("exportJson");
 	try{
 		var data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(localStorageHelper.array));
 		var link = document.getElementById("downloadLink");
@@ -356,9 +372,12 @@ function exportJson() {
 		link.setAttribute("href", data);
 		link.setAttribute("download", fileName);
 		link.click();
+		console.log(localStorageHelper.array.length + " webs exported to " + fileName );
 	}catch(e){
 		alert(e.message);
+		console.error(e);
 	}
+	console.groupEnd();
 }
 
 //
