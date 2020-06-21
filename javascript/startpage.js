@@ -87,7 +87,8 @@ class LocalStorageHelper{
 	// Return JSON array
 	// If there's no data, return array with template
 	getWebs(){
-		return this.array = (localStorage.json == null) ? this.setTemplate() : JSON.parse(localStorage.json);	
+		let webs = (localStorage.json == null) ? this.setTemplate() : JSON.parse(localStorage.json);
+		return webs;
 	}
 
 	// Sets json with parameter, losing previous json data
@@ -105,7 +106,20 @@ class LocalStorageHelper{
 
 	insertWeb(web){
 		this.array.push(web);
-		localStorage.json = JSON.stringify(this.array);	
+		this.saveToLocalStorage();
+	}
+
+	insertWebs(webs){
+		for(web in webs){
+			this.array.push(web);
+		}
+		this.saveToLocalStorage();
+	}
+
+	saveToLocalStorage(){
+		localStorage.json = JSON.stringify(this.array);
+		console.log(this.array.length + " webs saved in LocalStorage");
+	}
 	}
 }
 
@@ -145,16 +159,25 @@ var draggable;
 
 window.onload = function(){
 	if(checkLocalStorageCompatibility()){
-
-		localStorageHelper = new LocalStorageHelper();
-		loadElements();
-		update();
-		fileUploaderListener();	
+		init();
+	}else{
+		alert("Your browser does not support Locar Storage")
 	}
 }
 
+function init(){
+
+	localStorageHelper = new LocalStorageHelper();
+	loadElements();
+	fileUploaderListener();	
+	update();
+}
 function update(){
+	deleteChildNodes(WEB_CONTAINER);
 	paintWebs();
+
+	// Writes json into an input in String format
+	JSON_TEXTBOX.value = JSON.stringify(localStorageHelper.array);
 }
 
 function loadElements(){
@@ -177,6 +200,12 @@ function loadElements(){
 function deleteChildNodes(element){
 	while (element.firstChild){
 		element.removeChild(element.firstChild)
+	try{
+		while (element.firstChild){
+			element.removeChild(element.firstChild);
+		}
+	} catch(e){
+		console.error(e);
 	}
 }
 
@@ -205,46 +234,42 @@ function checkLocalStorageCompatibility(){
 // CONTAINER FUNCTIONS
 //
 
-// Paint webs in the container div
+// Append Link and Category objects in the container div
 function paintWebs(){
-	try {
-		deleteChildNodes(WEB_CONTAINER);
 
+	try {
 		// Create categories with their webs
-		for(let item of localStorageHelper["array"]){
-			var category = document.getElementById(item.category);
+		for(let web of localStorageHelper.array){
+			var category = document.getElementById(web.category);
 
 			// Create category if not exists
 			if(category == null){
-				WEB_CONTAINER.appendChild(new Category(item.category).element);
-				category = document.getElementById(item.category);
+				WEB_CONTAINER.appendChild(new Category(web.category).element);
+				category = document.getElementById(web.category);
 			}
 
 			// Append web to the <ul> of the category
-			category.appendChild(new Link(item.name, item.url, item.category).element);
+			category.appendChild(new Link(web.name, web.url, web.category).element);
 		}
-
-		// Writes json into an input in String format
-		JSON_TEXTBOX.value = JSON.stringify(localStorageHelper.array);
-
 	} catch(e) {
 		alert(e.message);
 	}
-	//event.preventDefault();
 }
 
 // Save webs to localStorage in JSON format
 function exportHtmlToJson(){
-	var categories = document.querySelectorAll(".category")
+	var categories = document.querySelectorAll(".category");
 
 	// Iterate each categories
 	for(let category of categories){
 		var webs = category.querySelectorAll(".web");
 
+		var webs = [];
 		// Iterate each web from a category
 		for(let web of webs){
-			localStorageHelper.insertWeb(new Web(web.text, web.id, category.id));
+			webs.push(web);
 		}
+		localStorageHelper.insertWeb(webs);
 	}
 }
 
@@ -266,7 +291,7 @@ function insertWeb(){
 				INPUT_CATEGORY.value
 			));
 
-			paintWebs();
+			update();
 		}
 	}
 	catch(e) {
@@ -283,7 +308,7 @@ function importJSON_onClick(){
 		alert(e.message);
 	}
 	
-	paintWebs();
+	update();
 }
 
 // Shows/hides the menu
@@ -311,7 +336,7 @@ function fileUploaderListener() {
 	reader.onload = function(event){
 		try {
 			localStorageHelper.setJson(JSON.parse(event.target.result));
-			paintWebs();
+			update();
 		} 
 		catch(e) {
 			alert(e.message);
@@ -327,8 +352,9 @@ function exportJson() {
 	try{
 		var data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(localStorageHelper.array));
 		var link = document.getElementById("downloadLink");
+		var fileName = getToday()+ "_startPage.json";
 		link.setAttribute("href", data);
-		link.setAttribute("download", getToday()+ "_startPage.json")
+		link.setAttribute("download", fileName);
 		link.click();
 	}catch(e){
 		alert(e.message);
