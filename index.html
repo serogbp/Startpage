@@ -1,51 +1,20 @@
 <!DOCTYPE html>
-<html>
-<head>
-	<meta charset="UTF-8">
-	<title>Start page</title>
-	<script src="javascript/startpage.js" type="text/javascript" charset="utf-8"></script>
-	<link rel="stylesheet" type="text/css" href="style/startpage.css">
-</head>
-<body>
-	<nav>
-		<label for="checkboxDropDown" class="cursorPointer">Manage webs</label>
-		<input type="checkbox" id="checkboxDropDown"> 
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
-		<!-- Add web inputs -->
-		<form class="start" action="javascript:void(0);">
-			<input id="inputName" type="text" name="name" placeholder="Name" required>
+		<title>StartPage</title>
 
-			<input id="inputUrl" type="text" name="url" placeholder="Url" required>
+		<link rel="stylesheet" href="style/style.css" />
+	</head>
 
-			<input id="inputCategory" type="text" name="category" placeholder="Category" required>
+	<body>
+		<div id="root"></div>
 
-			<button onclick="insertWeb()">Add</button>
-		</form>
-
-		<!-- Import/Restore json -->
-		<form action="javascript:void(0);">
-			<button id="exportButton" onclick="exportJson()">Export</button>
-			<a id="downloadLink" style="display:none"></a>
-			<button id="importButton" onclick="openFileExplorer()">Import</button>
-			<input type="file" name="import" id="fileExplorer" accept=".json">
-		</form>
-
-		<form>
-			<input id="jsonTextBox" type="text" placeholder="Import JSON">
-			<button type="button" onclick="importJSON_onClick()">Import_old</button>
-		</form>
-	</nav>
-
-	<header class="flexboxCenter">
-		
-		<!-- Search bar -->
-		<form action="https://encrypted.google.com/search" method="get">
-		    	<input id="search_text" onkeypress="textBoxColor()" type="text" name="q" value="" autofocus>
-		</form>
-	</header>
-
-	<main id="webContainer" class="flexboxCenter">
-		<!-- Paint webs with class="category"-->
-	</main>
-</body>
+		<script src="javascript/model.js"></script>
+		<script src="javascript/view.js"></script>
+		<script src="javascript/controller.js"></script>		
+	</body>
 </html>
