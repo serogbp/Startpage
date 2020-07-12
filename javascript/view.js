@@ -10,6 +10,7 @@ class View {
 		// Root element
 		this.app = this.getElement('#root');
 
+		this.header = this.createElement('header');
 
 		// Title
 		this.title = this.createElement('h1');
@@ -62,7 +63,7 @@ class View {
 
 		this.formImportExport.append (
 			this.buttonImport,
-			this.buttonExport,
+			this.buttonExport
 		)
 
 		// Search box
@@ -73,12 +74,15 @@ class View {
 		// Web container
 		this.webContainer = this.createElement('div', 'webContainer');
 
-		this.app.append (
+		this.header.append (
 			this.title,
 			this.formAddWeb,
-			// TODO add rest of forms
 			this.formImportExport,
-			this.searchText,
+			this.searchText
+		)
+
+		this.app.append (
+			this.header,
 			this.webContainer
 		)
 	}
