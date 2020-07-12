@@ -49,6 +49,10 @@ class Controller {
 	handleFilter = (search) => {
 		this.model.filterSearch(search);
 	}
+
+	handleDuplicate = (web) => {
+		return this.model.findDuplicate(web);
+	}
 }
 
 const app = new Controller(new Model(), new View());

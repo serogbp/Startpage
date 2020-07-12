@@ -24,7 +24,6 @@ class Model {
 	}
 
 	addWeb(web) {
-		// TODO check duplicate
 		this.webs.push(web);
 		this._commit(this.webs);
 	}
@@ -45,6 +44,10 @@ class Model {
 	deleteWeb(url) {
 		this.webs = this.webs.filter(web => web.url !== url);
 		this._commit(this.webs);
+	}
+
+	findDuplicate(web) {
+		return this.webs.find(w => w.url == web.url)
 	}
 
 	importWebs(webs) {

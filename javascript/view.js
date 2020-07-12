@@ -287,14 +287,18 @@ class View {
 	/*
 		Bind functions
 	*/
-	bindAddWeb(handler) {
+	bindAddWeb(commit, findDuplicate) {
 		this.formAddWeb.addEventListener('submit', event => {
 			event.preventDefault();
 
-			// If inputs have text, add web
-			if (this._getInputWeb()) {
-				handler(this._getInputWeb())
+			let web = this._getInputWeb();
+			let duplicate = findDuplicate(web);
+
+			if (!duplicate) {
+				commit(this._getInputWeb())
 				this._resetForm(this.formAddWeb);
+			} else {
+				alert('This website is already added on the ' + duplicate.category + ' category with this name: ' + duplicate.name);
 			}
 		});
 	}
