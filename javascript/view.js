@@ -19,19 +19,28 @@ class View {
 		// Form for adding webs
 		this.formAddWeb = this.createElement('form');
 
-		// TODO validate format
 		this.inputUrl = this.createElement('input');
 		this.inputUrl.type = 'text';
 		this.inputUrl.placeholder = 'Url';
 		this.inputUrl.name = 'url';
 		this.inputUrl.required = true;
 
-		// TODO add eventlistener click tab for autocomplete with url domain
+
 		this.inputName = this.createElement('input');
 		this.inputName.type = 'text';
 		this.inputName.placeholder = 'Name';
 		this.inputName.name = 'name';
 		this.inputName.required = true;
+
+		// Suggest web name with url domain e.g.: https://www.github.com -> Github
+		this.inputName.addEventListener('focus', event => {
+			let url = this.inputUrl.value;
+			let name = this.inputName.value;
+			if (url != "" && name == "") {
+				let n = url.match(/^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^.:\/?\n]+)?/)[1];
+				this.inputName.value = n.charAt(0).toUpperCase() + n.slice(1);
+			}
+		});
 
 		this.inputCategory = this.createElement('input');
 		this.inputCategory.type = 'text';
