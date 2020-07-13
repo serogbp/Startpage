@@ -122,7 +122,6 @@ class LocalStorageHelper{
 		localStorage.json = JSON.stringify(this.array);
 		console.log(this.array.length + " webs saved in LocalStorage");
 	}
-	}
 }
 
 /*
