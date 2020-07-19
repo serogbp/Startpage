@@ -10,6 +10,7 @@ class Model {
 	}
 
 	bindWebListChanged(callback){
+		// Store View's function for display the webs
 		this.onWebListChanged = callback;
 	}
 

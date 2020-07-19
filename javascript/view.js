@@ -5,7 +5,8 @@
  */
 class View {
 	constructor() {
-		this.currentElementBeingDragged;
+		this.currentElementBeingDragged = null;
+		this.handlerCommit = null;
 
 		// Root element
 		this.app = this.getElement('#root');
@@ -33,13 +34,8 @@ class View {
 		this.inputName.required = true;
 
 		// Suggest web name with url domain e.g.: https://www.github.com -> Github
-		this.inputName.addEventListener('focus', event => {
-			let url = this.inputUrl.value;
-			let name = this.inputName.value;
-			if (url != "" && name == "") {
-				let n = url.match(/^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^.:\/?\n]+)?/)[1];
-				this.inputName.value = n.charAt(0).toUpperCase() + n.slice(1);
-			}
+		this.inputName.addEventListener('focus', () => {
+			this._inputAutoCompleteName(this.inputUrl, this.inputName)
 		});
 
 		this.inputCategory = this.createElement('input');
@@ -134,7 +130,7 @@ class View {
 			switch (this.currentElementBeingDragged.tagName) {
 				case 'CATEGORY':
 					// Append category before/after currentTarget
-					this.appendNode(this.currentElementBeingDragged, event.currentTarget);
+					View.appendNode(this.currentElementBeingDragged, event.currentTarget);
 					break;
 				case 'LI':
 					// Append li element to the cagetory's ul (currentTarget)
@@ -167,7 +163,7 @@ class View {
 		row.addEventListener("drop", (event) =>{
 			event.preventDefault();
 			if(this.currentElementBeingDragged.tagName === 'LI'){
-				this.appendNode(this.currentElementBeingDragged, event.currentTarget);
+				View.appendNode(this.currentElementBeingDragged, event.currentTarget);
 			}
 		});
 
@@ -186,6 +182,15 @@ class View {
 	// Add web input getter
 	_getInputWeb() {
 		return {url: this.inputUrl.value, name: this.inputName.value, category: this.inputCategory.value};
+	}
+
+	_inputAutoCompleteName(inputUrl, inputName) {
+		let url = inputUrl.value;
+		let name = inputName.value;
+		if (url != "" && name == "") {
+			let n = url.match(/^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^.:\/?\n]+)?/)[1];
+			inputName.value = n.charAt(0).toUpperCase() + n.slice(1);
+		}
 	}
 
 	// Reset all inputs
@@ -238,11 +243,15 @@ class View {
 				category.querySelector('ul').append(this.createLink(web));
 			});
 
+			categories.forEach( category => {
+				//Append create web element
+				new AddWebElement(category, this.handlerCommit);
+			});
+
 			// Append categories
 			this.webContainer.append(...categories);
 		}
 	}
-
 	/*
 		Drag functions
 	*/
@@ -263,7 +272,7 @@ class View {
 	}
 	
 	// Append node after/before another
-	appendNode(draggedNode, referenceNode) {
+	static appendNode(draggedNode, referenceNode) {
 		if (draggedNode != referenceNode) {
 			
 			let position = draggedNode.compareDocumentPosition(referenceNode);
@@ -278,7 +287,7 @@ class View {
 		}
 	}
  	
- 	appendAfter(draggedNode, referenceNode) {
+ 	static appendAfter(draggedNode, referenceNode) {
  		if (draggedNode != referenceNode) {
 			referenceNode.parentNode.insertBefore(draggedNode, referenceNode.nextSibling);
 		}
@@ -287,15 +296,18 @@ class View {
 	/*
 		Bind functions
 	*/
-	bindAddWeb(commit, findDuplicate) {
+	bindAddWeb(handlerCommit, handlerFindDuplicate) {
+
+		this.handlerCommit = handlerCommit;
+
 		this.formAddWeb.addEventListener('submit', event => {
 			event.preventDefault();
 
 			let web = this._getInputWeb();
-			let duplicate = findDuplicate(web);
+			let duplicate = handlerFindDuplicate(web);
 
 			if (!duplicate) {
-				commit(this._getInputWeb())
+				handlerCommit(this._getInputWeb())
 				this._resetForm(this.formAddWeb);
 			} else {
 				alert('This website is already added on the ' + duplicate.category + ' category with this name: ' + duplicate.name);
@@ -370,5 +382,106 @@ class View {
 		this.searchText.addEventListener('input', event => {
 			handler(event.target.value);
 		});
+	}
+}
+
+// Create + element at the bottom of the category for adding new websites
+class AddWebElement {
+	constructor(category, handler) {
+		this.handler = handler;
+		this.category = category;
+		this.row = this.createAddWeb()
+	}
+
+	createAddWeb() {
+		var row = document.createElement('li');
+		row.draggable = false;
+		row.textContent = '+';
+		row.style.flexDirection = 'column';
+		row.style.textAlign = 'center';
+		row.style.fontSize = 'x-large';
+		row.style.userSelect = 'none';
+
+		this.category.querySelector('ul').append(row);
+
+		row.addEventListener('click', () => {
+			row.remove();
+			row = this.createAddWebInputs();
+			this.category.querySelector('ul').append(row);
+			row.querySelector('input').focus();
+		});
+
+		return row;
+	}
+
+	createAddWebInputs() {
+		// Root element
+		var row = document.createElement('li');
+		row.style.flexDirection = 'column';
+		
+		// Form
+		const formAddWeb = document.createElement('form');
+		formAddWeb.style.display = 'flex';
+		formAddWeb.style.flexDirection = 'column';
+		formAddWeb.addEventListener('submit', event => {
+			event.preventDefault();
+		});
+
+		// Inputs
+		const inputUrl = document.createElement('input');
+		inputUrl.type = 'text';
+		inputUrl.placeholder = 'Url';
+		inputUrl.name = 'url';
+		inputUrl.required = true;
+
+		const inputName = document.createElement('input');
+		inputName.type = 'text';
+		inputName.placeholder = 'Name';
+		inputName.name = 'name';
+		inputName.required = true;
+		inputName.addEventListener('focus', () => {
+			this._inputAutoCompleteName(inputUrl, inputName)
+		});
+
+		// Buttons
+		const buttonAdd = document.createElement('button');
+		buttonAdd.textContent = 'ADD';
+
+		const buttonCancel = document.createElement('button');
+		buttonCancel.textContent = 'CANCEL';
+
+		// Listeners
+		buttonCancel.addEventListener('click', () => {
+			row.remove();
+			row = this.createAddWeb();
+			this.category.querySelector('ul').append(row);
+		});
+
+		formAddWeb.addEventListener('submit', event => {
+			event.preventDefault();
+
+			this.handler({
+				id: inputUrl.value,
+				name: inputName.value,
+				category: this.category.id
+			});
+		});
+
+		// Append
+		formAddWeb.append(inputUrl, inputName, buttonAdd, buttonCancel);
+		row.append(formAddWeb);
+		return row;
+	}
+
+	// Suggest web name with url domain e.g.: https://www.github.com -> Github
+	_inputAutoCompleteName(inputUrl, inputName) {
+		let url = inputUrl.value;
+		let name = inputName.value;
+		if (url != "" && name == "") {
+			// Get domain
+			let n = url.match(/^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^.:\/?\n]+)?/)[1];
+			// First char to upper
+			inputName.value = n.charAt(0).toUpperCase() + n.slice(1);
+		}
 	}
 }

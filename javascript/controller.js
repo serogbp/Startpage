@@ -11,15 +11,19 @@ class Controller {
 		this.model = model
 		this.view = view
 
-		this.onWebListChanged(this.model.webs);
-		this.view.bindAddWeb(this.handleAddWeb);
 		// TODO edit web
 		//this.view.bindEditWeb(this.handleEditWeb);
+		this.view.bindAddWeb(this.handleAddWeb);
 		this.view.bindDeleteWeb(this.handleDeleteWeb);
-		this.model.bindWebListChanged(this.onWebListChanged);
 		this.view.bindExportJson(this.handleExportJson);
 		this.view.bindImportJson(this.handleImportJson);
 		this.view.bindFilter(this.handleFilter);
+
+		// Run View's function for displaying the webs
+		this.onWebListChanged(this.model.webs);
+
+		// Pass the same View's function to the model
+		this.model.bindWebListChanged(this.onWebListChanged);
 	}
 
 	onWebListChanged = (webs) => {
@@ -48,10 +52,6 @@ class Controller {
 
 	handleFilter = (search) => {
 		this.model.filterSearch(search);
-	}
-
-	handleDuplicate = (web) => {
-		return this.model.findDuplicate(web);
 	}
 }
 
