@@ -154,6 +154,7 @@ class View {
 		link.innerText = web.name;
 
 		const row = this.createElement('li');
+		row.classList.add('web');
 		row.draggable = true;
 		row.append(link);
 		

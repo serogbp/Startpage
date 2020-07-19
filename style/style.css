@@ -82,8 +82,17 @@ category li {
 	width: 12rem;
 }
 
-category li:hover{
+category li:hover {
 	background: #e1e1e1;
+}
+
+category li.web:hover {
+	background: #e1e1e1;
+	cursor: grab;
+}
+
+category li.web:active {
+	cursor: grabbing;
 }
 
 category a{
