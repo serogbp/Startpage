@@ -7,6 +7,7 @@ class View {
 	constructor() {
 		this.currentElementBeingDragged = null;
 		this.handlerCommit = null;
+		this.handlerFindDuplicate = null;
 
 		// Root element
 		this.app = this.getElement('#root');
@@ -17,43 +18,6 @@ class View {
 		this.title = this.createElement('h1');
 		this.title.textContent = 'StartPage '+ this._getEmoji();
 
-		// Form for adding webs
-		this.formAddWeb = this.createElement('form');
-
-		this.inputUrl = this.createElement('input');
-		this.inputUrl.type = 'text';
-		this.inputUrl.placeholder = 'Url';
-		this.inputUrl.name = 'url';
-		this.inputUrl.required = true;
-
-
-		this.inputName = this.createElement('input');
-		this.inputName.type = 'text';
-		this.inputName.placeholder = 'Name';
-		this.inputName.name = 'name';
-		this.inputName.required = true;
-
-		// Suggest web name with url domain e.g.: https://www.github.com -> Github
-		this.inputName.addEventListener('focus', () => {
-			this._inputAutoCompleteName(this.inputUrl, this.inputName)
-		});
-
-		this.inputCategory = this.createElement('input');
-		this.inputCategory.type = 'text';
-		this.inputCategory.placeholder = 'Category';
-		this.inputCategory.name = 'category';
-		this.inputCategory.required = true;
-
-		this.buttonAddWeb = this.createElement('button');
-		this.buttonAddWeb.textContent = 'Add';
-
-		this.formAddWeb.append (
-			this.inputUrl,
-			this.inputName,
-			this.inputCategory,
-			this.buttonAddWeb
-		)
-		
 		// Form for import/export
 		this.formImportExport = this.createElement('form');
 		this.formImportExport.addEventListener('submit', event =>{
@@ -81,7 +45,6 @@ class View {
 
 		this.header.append (
 			this.title,
-			this.formAddWeb,
 			this.formImportExport,
 			this.searchText
 		)
@@ -300,20 +263,7 @@ class View {
 	bindAddWeb(handlerCommit, handlerFindDuplicate) {
 
 		this.handlerCommit = handlerCommit;
-
-		this.formAddWeb.addEventListener('submit', event => {
-			event.preventDefault();
-
-			let web = this._getInputWeb();
-			let duplicate = handlerFindDuplicate(web);
-
-			if (!duplicate) {
-				handlerCommit(this._getInputWeb())
-				this._resetForm(this.formAddWeb);
-			} else {
-				alert('This website is already added on the ' + duplicate.category + ' category with this name: ' + duplicate.name);
-			}
-		});
+		this.handlerFindDuplicate = handlerFindDuplicate;
 	}
 
 	bindDeleteWeb(handler) {
