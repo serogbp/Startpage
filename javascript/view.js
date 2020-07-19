@@ -108,6 +108,11 @@ class View {
 		return categoryElement;
 	}
 
+	// Returns a Category with a AddWebElement
+	createEmptyCategory() {
+		let emptyCategory = this.createCategory({id: 'New category'});
+		new AddWebElement(emptyCategory, this.handlerCommit);
+		return emptyCategory;
 	}
 
 	createLink(web) {
@@ -209,13 +214,16 @@ class View {
 				category.querySelector('ul').append(this.createLink(web));
 			});
 
+			//Append AddWebElement to each category
 			categories.forEach( category => {
-				//Append create web element
 				new AddWebElement(category, this.handlerCommit);
 			});
 
 			// Append categories
 			this.webContainer.append(...categories);
+
+			// Empty category
+			this.webContainer.append(this.createEmptyCategory());
 		}
 	}
 	/*
@@ -338,6 +346,8 @@ class View {
 	}
 }
 
+
+
 // Create + element at the bottom of the category for adding new websites
 class AddWebElement {
 	constructor(category, handler) {
@@ -436,5 +446,14 @@ class AddWebElement {
 			// First char to upper
 			inputName.value = n.charAt(0).toUpperCase() + n.slice(1);
 		}
+	}
+}
+
+
+
+// Creates new Category
+class AddCategoryElement {
+	constructor() {
+
 	}
 }
