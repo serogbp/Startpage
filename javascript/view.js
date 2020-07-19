@@ -66,28 +66,19 @@ class View {
 	}
 
 	createCategory(category) {
-		// Title
+
+		const categoryElement = this.createElement('category', 'category', category.id);
+		const webList = this.createElement('ul');
 		const title = this.createElement('h4');
-		title.textContent = category.id;
-		title.draggable = true;
 
-		// Allow change positions of categories by dragging by their title
-		title.addEventListener("dragstart", event => {
-			this.currentElementBeingDragged = c;
-		});
-
-		// Web list
-		const list = this.createElement('ul');
-		const c = this.createElement('category', 'category', category.id);
-		c.id = category.id;
+		categoryElement.id = category.id;
 
 		// Allow drag elements over categories
-		c.addEventListener('dragover', this.dragOver);
+		categoryElement.addEventListener('dragover', this.dragOver);
 		// Allow elements being dragged enter into categories nodes
-		c.addEventListener('dragenter', this.dragEnter);
-
+		categoryElement.addEventListener('dragenter', this.dragEnter);
 		// Drop event
-		c.addEventListener("drop", (event) =>{
+		categoryElement.addEventListener("drop", (event) =>{
 			event.preventDefault();
 
 			switch (this.currentElementBeingDragged.tagName) {
@@ -103,9 +94,20 @@ class View {
 			}
 		});
 
-		c.append(title, list);
+		title.textContent = category.id;
 
-		return c;
+		title.draggable = true;
+
+		// Allow change positions of categories by dragging by their title
+		title.addEventListener("dragstart", event => {
+			this.currentElementBeingDragged = c;
+		});
+
+		categoryElement.append(title, webList);
+
+		return categoryElement;
+	}
+
 	}
 
 	createLink(web) {
