@@ -34,6 +34,11 @@ class Model {
 		this._commit(this.webs);
 	}
 
+	replaceWebs(webs) {
+		this.webs = webs;
+		this._commit(this.webs);
+	}
+
 	editWeb(url, updatedWeb) {
 		this.webs = this.webs.map(w =>
 			w.url === url ? {

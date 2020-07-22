@@ -14,6 +14,7 @@ class Controller {
 		// TODO edit web
 		//this.view.bindEditWeb(this.handleEditWeb);
 		this.view.bindAddWeb(this.handleAddWeb);
+		this.view.bindReplaceWebs(this.handleReplaceWebs);
 		this.view.bindDeleteWeb(this.handleDeleteWeb);
 		this.view.bindExportJson(this.handleExportJson);
 		this.view.bindImportJson(this.handleImportJson);
@@ -32,6 +33,10 @@ class Controller {
 
 	handleAddWeb = (web) => {
 		this.model.addWeb(web);
+	}
+
+	handleReplaceWebs = (webs) => {
+		this.model.replaceWebs(webs);
 	}
 
 	handleEditWeb = (url, web) => {

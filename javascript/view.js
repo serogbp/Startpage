@@ -7,7 +7,7 @@ class View {
 	constructor() {
 		this.currentElementBeingDragged = null;
 		this.handlerCommit = null;
-		this.handlerFindDuplicate = null;
+		this.handlerReplace = null;
 
 		// Root element
 		this.app = this.getElement('#root');
@@ -84,7 +84,7 @@ class View {
 			switch (this.currentElementBeingDragged.tagName) {
 				case 'CATEGORY':
 					// Append category before/after currentTarget
-					View.appendNode(this.currentElementBeingDragged, event.currentTarget);
+					this.appendNode(this.currentElementBeingDragged, event.currentTarget);
 					break;
 				case 'LI':
 					// Append li element to the cagetory's ul (currentTarget)
@@ -100,7 +100,7 @@ class View {
 
 		// Allow change positions of categories by dragging by their title
 		title.addEventListener("dragstart", event => {
-			this.currentElementBeingDragged = c;
+			this.currentElementBeingDragged = categoryElement;
 		});
 
 		categoryElement.append(title, webList);
@@ -134,7 +134,7 @@ class View {
 		row.addEventListener("drop", (event) =>{
 			event.preventDefault();
 			if(this.currentElementBeingDragged.tagName === 'LI'){
-				View.appendNode(this.currentElementBeingDragged, event.currentTarget);
+				this.appendNode(this.currentElementBeingDragged, event.currentTarget);
 			}
 		});
 
@@ -226,6 +226,26 @@ class View {
 			this.webContainer.append(this.createEmptyCategory());
 		}
 	}
+
+	// Get all webs from html and commits it to localStorage
+	_commitWebs(handlerReplace) {
+		let webs = [];
+
+		// Iterate each category
+		this.app.querySelectorAll('category').forEach( category => {
+			// Iterate each web
+			category.querySelectorAll('.link').forEach( web => {
+				webs.push({
+					url: web.id,
+					name: web.innerText,
+					category: category.id
+				});
+			});
+		});
+
+		handlerReplace(webs);
+	}
+
 	/*
 		Drag functions
 	*/
@@ -246,7 +266,7 @@ class View {
 	}
 	
 	// Append node after/before another
-	static appendNode(draggedNode, referenceNode) {
+	appendNode(draggedNode, referenceNode) {
 		if (draggedNode != referenceNode) {
 			
 			let position = draggedNode.compareDocumentPosition(referenceNode);
@@ -258,22 +278,29 @@ class View {
 				// Append Before
 				referenceNode.parentNode.insertBefore(draggedNode, referenceNode);
 			}
+
+			this._commitWebs(this.handlerReplace);
 		}
 	}
  	
- 	static appendAfter(draggedNode, referenceNode) {
+ 	appendAfter(draggedNode, referenceNode) {
  		if (draggedNode != referenceNode) {
 			referenceNode.parentNode.insertBefore(draggedNode, referenceNode.nextSibling);
 		}
+
+		this._commitWebs(this.handlerReplace);
 	}
 
 	/*
 		Bind functions
 	*/
-	bindAddWeb(handlerCommit, handlerFindDuplicate) {
+	bindAddWeb(handlerCommit) {
 
 		this.handlerCommit = handlerCommit;
-		this.handlerFindDuplicate = handlerFindDuplicate;
+	}
+
+	bindReplaceWebs(handlerReplace) {
+		this.handlerReplace = handlerReplace;
 	}
 
 	bindDeleteWeb(handler) {
@@ -424,7 +451,7 @@ class AddWebElement {
 			event.preventDefault();
 
 			this.handler({
-				id: inputUrl.value,
+				url: inputUrl.value,
 				name: inputName.value,
 				category: this.category.id
 			});
