@@ -314,30 +314,31 @@ class View {
 		});
 	}
 
+	// Export the webs to json file
 	bindExportJson(handler) {
 		this.buttonExport.addEventListener('click', event => {
 			try {
+				// Get webs from the model
 				let webs = handler();
 
-				if (webs.length == 0) {
+				if (webs && webs.length == 0) {
 					alert('Add some websites first!');
 					return;
 				}
 
-				webs = JSON.stringify(webs);
-
 				let date = new Date();
-				date = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-
-				let data = "data:text/json;charset=utf-8," + encodeURIComponent(handler());
-				let fileName = date + "_startPage.json";
+				// File name format yyyy-mm-dd_startPage.json
+				let fileName = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + "_startPage.json";
+				let data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(webs));
 				
+				// Create <a> tag for downloading the json
 				let link = this.createElement('a');
 				link.setAttribute("href", data);
 				link.setAttribute("download", fileName);
 				link.click();
 			} catch(e) {
-				alert(e.message);
+				alert('Error exporting webs');
+				console.log(e.message);
 			}
 		});
 	}
