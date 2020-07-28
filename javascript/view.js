@@ -44,8 +44,8 @@ class View {
 		this.webContainer = this.createElement('div', 'webContainer');
 
 		this.header.append (
-			this.title,
 			this.formImportExport,
+			this.title,
 			this.searchText
 		)
 
@@ -78,23 +78,33 @@ class View {
 		categoryElement.addEventListener('dragover', this.dragOver);
 		// Allow elements being dragged enter into categories nodes
 		categoryElement.addEventListener('dragenter', this.dragEnter);
-		// Drop event
-		categoryElement.addEventListener("drop", (event) =>{
-			event.preventDefault();
+		
+		categoryElement.addEventListener('dragstart', (event) => {
+			event.dataTransfer.setData('dragElementId', event.target.parentElement.id);
+		});
 
-			switch (this.currentElementBeingDragged.tagName) {
+		categoryElement.addEventListener('drop', (event) =>{
+			event.preventDefault();
+			
+			let dragElementId = event.dataTransfer.getData('dragElementId');
+
+			let draggedElement = document.querySelector(`#${dragElementId}`);
+
+			switch (draggedElement.tagName) {
 				case 'CATEGORY':
 					// Append category before/after currentTarget
-					this.appendNode(this.currentElementBeingDragged, event.currentTarget);
+					this.appendNode(draggedElement, event.currentTarget);
 					break;
-				case 'LI':
-					// Append li element to the cagetory's ul (currentTarget)
-					event.currentTarget.querySelector('ul').appendChild(this.currentElementBeingDragged);
-				default:
-					break;
+					case 'LI':
+						// Append li element to the category's ul (currentTarget)
+						event.currentTarget.querySelector('ul').appendChild(draggedElement);
+						default:
+							break;
 			}
 		});
+		
 		categoryElement.append(title, webList);
+		
 		return categoryElement;
 	}
 
@@ -134,6 +144,10 @@ class View {
 	_getEmoji() {
 		let emojis = ["🤡", "💩", "👻", "💀", "☠️", "👽", "👾", "🤖", "🎃", "🧠", "👀", "👁", "👨‍💻", "👩‍💻", "🧟‍♂️", "🧟‍♀️", "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯", "🦁", "🐮", "🐷", "🐸", "🐵", "🙈", "🙉", "🙊", "🐒", "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦅", "🦉", "🦇", "🐺", "🐗", "🐴", "🦄", "🐌", "🐢", "🐍", "🦎", "🦖", "🦕", "🐡", "🐠", "🐟", "🐬", "🐳", "🐋", "🦈", "🐊", "🐅", "🐆", "🦓", "🦍", "🐘", "🦛", "🦏", "🐪", "🐫", "🦒", "🦘", "🐃", "🐂", "🐄", "🐎", "🐖", "🐏", "🐑", "🦙", "🐐", "🦌", "🐕", "🐩", "🐈", "🐓", "🦃", "🦚", "🦜", "🦢", "🕊", "🐇", "🦝", "🦡", "🐁", "🐀", "🐿", "🦔", "🐉", "🐲", "🌵", "🎄", "🌲", "🌳", "🌴", "🌱", "🌿", "☘️", "🍀", "🎍", "🎋", "🍃", "🍂", "🍁", "🍄", "🐚", "🌾", "💐", "🌷", "🌹", "🥀", "🌺", "🌸", "🌼", "🌻", "🌞", "🌝", "🌛", "🌜", "🌚", "🌕", "🌖", "🌗", "🌘", "🌑", "🌒", "🌓", "🌔", "🌙", "🌎", "🌍", "🌏", "🪐", "💫", "⭐️", "🌟", "✨", "⚡️", "☄️", "💥", "🔥", "🌪", "🌈", ];
 		return emojis[Math.floor(Math.random() * emojis.length)];
+	}
+
+	setCurrentElementBeingDragged(element) {
+		this.currentElementBeingDragged = element;
 	}
 
 	getElement(selector) {
@@ -208,9 +222,6 @@ class View {
 			categories.forEach( category => {
 				new AddWebElement(category, this.handlerCommit);
 			});
-
-			// Append categories
-			this.webContainer.append(...categories);
 
 			// Empty category
 			this.webContainer.append(this.createEmptyCategory());
