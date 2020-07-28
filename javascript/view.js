@@ -69,8 +69,9 @@ class View {
 
 		const categoryElement = this.createElement('category', 'category', category.id);
 		const webList = this.createElement('ul');
-		const title = this.createElement('h4');
-
+		const title = document.createElement('category-title');
+		title.handlerCommit = () => this._commitWebs(this.handlerReplace);
+		
 		categoryElement.id = category.id;
 
 		// Allow drag elements over categories
@@ -93,18 +94,7 @@ class View {
 					break;
 			}
 		});
-
-		title.textContent = category.id;
-
-		title.draggable = true;
-
-		// Allow change positions of categories by dragging by their title
-		title.addEventListener("dragstart", event => {
-			this.currentElementBeingDragged = categoryElement;
-		});
-
 		categoryElement.append(title, webList);
-
 		return categoryElement;
 	}
 
@@ -476,11 +466,92 @@ class AddWebElement {
 	}
 }
 
+/* 
+* Custom element title for the category element.
+* On click it transforms into an input allowing editing the category name.
+* On blur or keypress == Enter transforms back to title.
+*
+* After instantiation with document.createElement(...), 
+* it needs to set the handlerCommit with the setter.
+* e.g: 
+* 		const title = document.createElement('category-title');
+		title.handlerCommit = () => this._commitWebs(this.handlerReplace);
+*/
+customElements.define('category-title',
+	class extends HTMLElement {
+		constructor() {
+			super();
+			this.attachShadow({mode: 'open'});
 
+			// Received with setter after instantiation
+			this.handlerCommit = null;
+		}
 
-// Creates new Category
-class AddCategoryElement {
-	constructor() {
+		connectedCallback() {
+			this.parent = this.parentElement;
+			
+			this.categoryTitle = this.shadowRoot.appendChild(this.createTitle());
+			this.categoryInput = this.shadowRoot.appendChild(this.createInput());
+		}
+		
+		createTitle() {	
+			const title = document.createElement('h4');
+			title.textContent = this.parent.id;
+			title.draggable = true;
+		
+			title.addEventListener('click', () => {
+				this.showInput();
+			});
 
+			return title;
+		}
+
+		createInput(){
+			const input = document.createElement('input');
+			input.type = 'text';
+			input.value = this.parent.id;
+			input.style.display = 'none';
+
+			input.addEventListener('keydown', event => {
+				if (event.key === 'Enter') {
+					this.showTitle();
+					this.saveTitle(input.value);
+				}
+			});
+			input.addEventListener('blur', () => {
+				this.showTitle();
+				this.saveTitle(input.value);
+			});	
+			return input;
+		}
+
+		showTitle() {
+			this.categoryTitle.style.display = 'block';
+			this.categoryInput.style.display = 'none';
+		}
+
+		showInput() {
+			this.categoryTitle.style.display = 'none';
+			this.categoryInput.style.display = 'block';
+			this.categoryInput.focus();
+		}
+
+		// Save category name changes from the input
+		saveTitle(newTitle) {
+			try {
+				if (this.parent.id != newTitle) {
+					this.parent.id = newTitle;
+					this.handlerCommit();
+				}
+			} catch (error) {
+				alert('Error saving title changes');
+				console.log(`Error saving title changes: ${error.message}`);
+			}
+		}
+
+		// Setter. Gets function for saving webs
+		handlerCommit(handler) {
+			this.handlerCommit = handler;
+		}
 	}
-}
+ );
