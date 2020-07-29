@@ -496,7 +496,6 @@ customElements.define('category-title',
 	class extends HTMLElement {
 		constructor() {
 			super();
-			this.attachShadow({mode: 'open'});
 
 			// Received with setter after instantiation
 			this.handlerCommit = null;
@@ -505,8 +504,8 @@ customElements.define('category-title',
 		connectedCallback() {
 			this.parent = this.parentElement;
 			
-			this.categoryTitle = this.shadowRoot.appendChild(this.createTitle());
-			this.categoryInput = this.shadowRoot.appendChild(this.createInput());
+			this.categoryTitle = this.appendChild(this.createTitle());
+			this.categoryInput = this.appendChild(this.createInput());
 		}
 		
 		createTitle() {	
