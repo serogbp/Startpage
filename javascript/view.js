@@ -16,7 +16,7 @@ class View {
 
 		// Title
 		this.title = this.createElement('h1');
-		this.title.textContent = 'StartPage '+ this._getEmoji();
+		this.title.textContent = this._getEmoji() + ' StartPage '+ this._getEmoji();
 
 		// Form for import/export
 		this.formImportExport = this.createElement('form');
@@ -69,9 +69,9 @@ class View {
 
 		const categoryElement = this.createElement('category', 'category', category.id);
 		const webList = this.createElement('ul');
-		const title = document.createElement('category-title');
-		title.handlerCommit = () => this._commitWebs(this.handlerReplace);
-		
+		const categoryTitle = document.createElement('category-title');
+		categoryTitle.handlerCommit = () => this._commitWebs(this.handlerReplace);
+
 		categoryElement.id = category.id;
 
 		// Allow drag elements over categories
@@ -103,7 +103,7 @@ class View {
 			}
 		});
 		
-		categoryElement.append(title, webList);
+		categoryElement.append(categoryTitle, webList);
 		
 		return categoryElement;
 	}
@@ -200,6 +200,9 @@ class View {
 			const p = this.createElement('p');
 			p.textContent = 'Empty! Add a website?';
 			this.webContainer.append(p);
+			// Empty category
+			this.webContainer.append(this.createEmptyCategory());
+
 		} else {
 			let categories = [];
 
@@ -228,7 +231,7 @@ class View {
 		}
 	}
 
-	// Get all webs from html and commits it to localStorage
+	// Get all webs from html and commits them to localStorage
 	_commitWebs(handlerReplace) {
 		let webs = [];
 
