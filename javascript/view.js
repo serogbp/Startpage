@@ -111,7 +111,8 @@ class View {
 	// Returns a Category with a AddWebElement
 	createEmptyCategory() {
 		let emptyCategory = this.createCategory({id: 'New category'});
-		new AddWebElement(emptyCategory, this.handlerCommit);
+		let newWebButton = emptyCategory.appendChild(document.createElement('category-new-web-button'));
+		newWebButton.handler = this.handlerCommit;
 		return emptyCategory;
 	}
 
@@ -221,9 +222,10 @@ class View {
 				category.querySelector('ul').append(this.createLink(web));
 			});
 
-			//Append AddWebElement to each category
+			// Add button por adding new webs
 			categories.forEach( category => {
-				new AddWebElement(category, this.handlerCommit);
+				let newWebButton = category.appendChild(document.createElement('category-new-web-button'));
+				newWebButton.handler = this.handlerCommit;
 			});
 
 			// Empty category
@@ -378,109 +380,6 @@ class View {
 	}
 }
 
-
-
-// Create + element at the bottom of the category for adding new websites
-class AddWebElement {
-	constructor(category, handler) {
-		this.handler = handler;
-		this.category = category;
-		this.row = this.createAddWeb()
-	}
-
-	createAddWeb() {
-		var row = document.createElement('li');
-		row.draggable = false;
-		row.textContent = '+';
-		row.style.flexDirection = 'column';
-		row.style.textAlign = 'center';
-		row.style.fontSize = 'x-large';
-		row.style.userSelect = 'none';
-
-		this.category.querySelector('ul').append(row);
-
-		row.addEventListener('click', () => {
-			row.remove();
-			row = this.createAddWebInputs();
-			this.category.querySelector('ul').append(row);
-			row.querySelector('input').focus();
-		});
-
-		return row;
-	}
-
-	createAddWebInputs() {
-		// Root element
-		var row = document.createElement('li');
-		row.style.flexDirection = 'column';
-		
-		// Form
-		const formAddWeb = document.createElement('form');
-		formAddWeb.style.display = 'flex';
-		formAddWeb.style.flexDirection = 'column';
-		formAddWeb.addEventListener('submit', event => {
-			event.preventDefault();
-		});
-
-		// Inputs
-		const inputUrl = document.createElement('input');
-		inputUrl.type = 'text';
-		inputUrl.placeholder = 'Url';
-		inputUrl.name = 'url';
-		inputUrl.required = true;
-
-		const inputName = document.createElement('input');
-		inputName.type = 'text';
-		inputName.placeholder = 'Name';
-		inputName.name = 'name';
-		inputName.required = true;
-		inputName.addEventListener('focus', () => {
-			this._inputAutoCompleteName(inputUrl, inputName)
-		});
-
-		// Buttons
-		const buttonAdd = document.createElement('button');
-		buttonAdd.textContent = 'ADD';
-
-		const buttonCancel = document.createElement('button');
-		buttonCancel.textContent = 'CANCEL';
-
-		// Listeners
-		buttonCancel.addEventListener('click', () => {
-			row.remove();
-			row = this.createAddWeb();
-			this.category.querySelector('ul').append(row);
-		});
-
-		formAddWeb.addEventListener('submit', event => {
-			event.preventDefault();
-
-			this.handler({
-				url: inputUrl.value,
-				name: inputName.value,
-				category: this.category.id
-			});
-		});
-
-		// Append
-		formAddWeb.append(inputUrl, inputName, buttonAdd, buttonCancel);
-		row.append(formAddWeb);
-		return row;
-	}
-
-	// Suggest web name with url domain e.g.: https://www.github.com -> Github
-	_inputAutoCompleteName(inputUrl, inputName) {
-		let url = inputUrl.value;
-		let name = inputName.value;
-		if (url != "" && name == "") {
-			// Get domain
-			let n = url.match(/^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^.:\/?\n]+)?/)[1];
-			// First char to upper
-			inputName.value = n.charAt(0).toUpperCase() + n.slice(1);
-		}
-	}
-}
-
 /* 
 * Custom element title for the category element.
 * On click it transforms into an input allowing editing the category name.
@@ -490,7 +389,7 @@ class AddWebElement {
 * it needs to set the handlerCommit with the setter.
 * e.g: 
 * 		const title = document.createElement('category-title');
-		title.handlerCommit = () => this._commitWebs(this.handlerReplace);
+*		title.handlerCommit = () => this._commitWebs(this.handlerReplace);
 */
 customElements.define('category-title',
 	class extends HTMLElement {
@@ -569,3 +468,163 @@ customElements.define('category-title',
 		}
 	}
  );
+
+/* 
+* Custom element for adding new webs.
+* Placed at the bottom of each category with the '+' symbol. 
+* 
+* On click transforms into an form to type url and name of the new website.
+* Has an Add button that saves the new website and a Cancel button that
+* reverts the element to the original state.
+* 
+* After instantiation with document.createElement(...), 
+* it needs to set the handlerCommit with the setter.
+* e.g: 
+*		let newWeb = category.appendChild(document.createElement('category-new-web-button'));
+*		newWeb.handler = this.handlerCommit;
+* */
+customElements.define('category-new-web-button',
+	class extends HTMLElement {
+		constructor() {
+			super();
+
+			// Received with setter after instantiation
+			this.handlerCommit = null;			
+		}
+
+		connectedCallback() {
+			this._button = this.appendChild(this.createButton());
+			this._form = this.appendChild(this.createForm());
+		}
+
+		createBase() {
+			const row = document.createElement('li');
+			row.draggable = false;
+			row.style.flexDirection = 'column';
+			row.style.userSelect = 'none';
+			return row;
+		}
+
+		createButton() {
+			const row = this.createBase();
+			row.addEventListener('click', () => {
+				this.showForm();
+			});
+
+			const text = document.createElement('p');
+			text.textContent = '+';
+			text.style.textAlign = 'center';
+			text.style.fontSize = 'x-large';
+			text.style.margin = 0;
+
+			row.append(text);
+			return row;
+		}
+
+		createForm() {
+			// Base
+			const row = this.createBase();
+
+			// Form
+			const _form = document.createElement('form');
+			_form.style.display = 'flex';
+			_form.style.flexDirection = 'column';
+			_form.addEventListener('submit', event => {
+				event.preventDefault();
+			});
+
+			// Inputs
+			const inputUrl = document.createElement('input');
+			inputUrl.type = 'text';
+			inputUrl.placeholder = 'Url';
+			inputUrl.name = 'url';
+			inputUrl.required = true;
+			_form.inputUrl = inputUrl;
+
+			const inputName = document.createElement('input');
+			inputName.type = 'text';
+			inputName.placeholder = 'Name';
+			inputName.name = 'name';
+			inputName.required = true;
+			inputName.addEventListener('focus', () => {
+				this._inputAutoCompleteName(inputUrl, inputName)
+			});
+			_form.inputName = inputName;
+
+			// Button Add
+			const buttonAdd = document.createElement('button');
+			buttonAdd.textContent = 'ADD';
+
+			buttonAdd.addEventListener('click', () => {
+				if(_form.checkValidity()){
+					this.handler({
+						url: inputUrl.value,
+						name: inputName.value,
+						category: this.parentElement.id
+					});
+				}
+			});
+
+			// Button Cancel
+			const buttonCancel = document.createElement('button');
+			buttonCancel.textContent = 'CANCEL';
+			buttonCancel.classList.add('red');
+
+			// Listener click
+			buttonCancel.addEventListener('click', event => {
+				this.showButton();
+			});
+
+			_form.addEventListener('submit', event => {
+				event.preventDefault();
+			});
+
+			// Append
+			_form.append(inputUrl, inputName, buttonAdd, buttonCancel);
+			row.append(_form);
+			row.style.display = 'none';
+
+			return row;
+		}
+		
+		showButton() {
+			this.querySelectorAll('input').forEach(input => {
+				input.disabled = true;
+			});
+
+			this._form.style.display = 'none';
+			this._button.style.display = 'flex';
+		}
+
+		showForm(){
+			this._button.style.display = 'none';
+			this.resetForm(this._form);
+			this._form.style.display = 'flex';
+		}
+
+		resetForm() {
+			this.querySelectorAll('input').forEach(input => {
+				input.disabled = false;
+				input.value = '';
+				input.focus();
+			});
+		}
+
+		// Suggest web name with url domain e.g.: https://www.github.com -> Github
+		_inputAutoCompleteName(inputUrl, inputName) {
+			let url = inputUrl.value;
+			let name = inputName.value;
+			if (url != "" && name == "") {
+				// Get domain name without .com.../.net.../etc
+				let n = url.match(/^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^.:\/?\n]+)?/)[1];
+				// First char to upper
+				inputName.value = n.charAt(0).toUpperCase() + n.slice(1);
+			}
+		}
+
+		// Setter. Gets function for saving webs
+		handlerCommit(handler) {
+			this.handlerCommit = handler;
+		}
+	}
+);
