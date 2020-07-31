@@ -107,4 +107,20 @@ category a{
 	display: flex;
 	flex-flow: row nowrap;
 	justify-content: flex-start;
+category-title {
+	display: block;
+	font-weight: bold;
+	padding: 2rem 0;
+}
+
+category-title input {
+	width: 100%;
+}
+
+category-title:hover {
+	cursor: grab;
+}
+
+category-title span:hover {
+	cursor: text;
 }

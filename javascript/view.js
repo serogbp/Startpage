@@ -402,18 +402,17 @@ customElements.define('category-title',
 
 		connectedCallback() {
 			this.parent = this.parentElement;
-			
+
 			this.categoryTitle = this.appendChild(this.createTitle());
 			this.categoryInput = this.appendChild(this.createInput());
 		}
 		
 		createTitle() {	
-			const title = document.createElement('h4');
+			const title = document.createElement('span');
 			title.textContent = this.parent.id;
-			title.draggable = true;
 		
 			title.addEventListener('click', () => {
-				this.showInput();
+				this.showInput(title.textContent);
 			});
 
 			return title;
@@ -422,17 +421,14 @@ customElements.define('category-title',
 		createInput(){
 			const input = document.createElement('input');
 			input.type = 'text';
-			input.value = this.parent.id;
 			input.style.display = 'none';
 
 			input.addEventListener('keydown', event => {
 				if (event.key === 'Enter') {
-					this.showTitle();
 					this.saveTitle(input.value);
 				}
 			});
 			input.addEventListener('blur', () => {
-				this.showTitle();
 				this.saveTitle(input.value);
 			});	
 			return input;
@@ -441,25 +437,31 @@ customElements.define('category-title',
 		showTitle() {
 			this.categoryTitle.style.display = 'block';
 			this.categoryInput.style.display = 'none';
+			this.draggable = true;
 		}
 
-		showInput() {
+		showInput(text) {
+			this.draggable = false;
 			this.categoryTitle.style.display = 'none';
+			this.categoryInput.value = text;
 			this.categoryInput.style.display = 'block';
 			this.categoryInput.focus();
 		}
 
 		// Save category name changes from the input
 		saveTitle(newTitle) {
-			try {
-				if (this.parent.id != newTitle) {
+			// If is not empty and not equal to the old name, save
+			if (newTitle != "" && this.parent.id != newTitle) {
+				try {
 					this.parent.id = newTitle;
 					this.handlerCommit();
+				} catch (error) {
+					alert('Error saving title changes');
+					console.log(`Error saving title changes: ${error.message}`);
 				}
-			} catch (error) {
-				alert('Error saving title changes');
-				console.log(`Error saving title changes: ${error.message}`);
 			}
+
+			this.showTitle();
 		}
 
 		// Setter. Gets function for saving webs
