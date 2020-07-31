@@ -489,12 +489,13 @@ customElements.define('category-new-web-button',
 			super();
 
 			// Received with setter after instantiation
-			this.handlerCommit = null;			
+			this.handlerCommit = null;
+			
+			this._form = null;
 		}
 
 		connectedCallback() {
 			this._button = this.appendChild(this.createButton());
-			this._form = this.appendChild(this.createForm());
 		}
 
 		createBase() {
@@ -539,7 +540,6 @@ customElements.define('category-new-web-button',
 			inputUrl.placeholder = 'Url';
 			inputUrl.name = 'url';
 			inputUrl.required = true;
-			_form.inputUrl = inputUrl;
 
 			const inputName = document.createElement('input');
 			inputName.type = 'text';
@@ -549,7 +549,6 @@ customElements.define('category-new-web-button',
 			inputName.addEventListener('focus', () => {
 				this._inputAutoCompleteName(inputUrl, inputName)
 			});
-			_form.inputName = inputName;
 
 			// Button Add
 			const buttonAdd = document.createElement('button');
@@ -582,32 +581,20 @@ customElements.define('category-new-web-button',
 			// Append
 			_form.append(inputUrl, inputName, buttonAdd, buttonCancel);
 			row.append(_form);
-			row.style.display = 'none';
 
 			return row;
 		}
 		
 		showButton() {
-			this.querySelectorAll('input').forEach(input => {
-				input.disabled = true;
-			});
-
-			this._form.style.display = 'none';
+			this._form.remove();
 			this._button.style.display = 'flex';
 		}
 
 		showForm(){
 			this._button.style.display = 'none';
-			this.resetForm(this._form);
-			this._form.style.display = 'flex';
-		}
-
-		resetForm() {
-			this.querySelectorAll('input').forEach(input => {
-				input.disabled = false;
-				input.value = '';
-				input.focus();
-			});
+			
+			this._form = this.appendChild(this.createForm());
+			this._form.querySelector('input').focus();
 		}
 
 		// Suggest web name with url domain e.g.: https://www.github.com -> Github
