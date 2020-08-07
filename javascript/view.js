@@ -293,100 +293,83 @@ class View {
 	}
 }
 
-/*
-* Custom element that contains a list of websites of the same category
+/* 
+* Custom element that wraps all Category custom elements
 * 
+* Example of instantiation:
+*	const category = document.createElement('category-controller');
+*	category.title = web.category;
+*	category.handlerAddWeb = (web) => this.handlerAddWeb(web);
+*	category.handlerCommit = () => this.commitWebs();
+*	category.handlerDrop = (draggedElement, target) => this.appendNode(draggedElement, target);
+*	category.build();
 */
-class CategoryList extends HTMLElement {
+class CategoryController extends HTMLElement {
 	constructor() {
 		super();
+
+		this.title = null;
+		this.header = null;
+		this.content = null;
+		this.footer = null;
+
+		this.handlerAddWeb = null;
+		this.handlerCommit = null;
+		this.handlerDrop = null;
 	}
 
 	connectedCallback() {
-
 	}
 
 	build() {
-		this.webList = this.appendChild(document.createElement('ul'));
+
+		if (this.title == null) throw new Error('Title is missing');
+
+		this.id = this.title;
+		this.classList.add(CLASS_NAME_CATEGORY);
+
+		this.header = document.createElement(ELEMENT_CATEGORY_TITLE);
+		this.header.title = this.title;
+		this.header.handlerDrop = this.handlerDrop;
+		this.header.handlerCommit = this.handlerCommit;
+		this.header.build();
+
+		this.content = document.createElement(ELEMENT_CATEGORY_LIST);
+		this.content.handlerDrop = this.handlerDrop;
+		this.content.handlerCommit = this.handlerCommit;
+		this.content.build();
+
+		this.footer = document.createElement(ELEMENT_CATEGORY_NEW_WEB);
+		this.footer.handlerAddWeb = this.handlerAddWeb;
+		this.footer.build();
+
+
+		this.append(this.header, this.content, this.footer);
+	}
+
+	title(title) {
+		this.title = title;
+	}
+
+	getTitle() {
+		return this.title;
 	}
 
 	addWeb(web) {
-		var categoryWeb = document.createElement('a', { is: ELEMENT_CATEGORY_WEB });
-		categoryWeb.handlerDrop = this.handlerDrop;
-		categoryWeb.build(web);
-		this.webList.append(categoryWeb);
+		this.content.addWeb(web);
 	}
 
-	handlerDrop(handler) {
-		this.handlerDrop = handler;
+	// Save web
+	handlerAddWeb(handler) {
+		this.handlerAddWeb = handler;
 	}
 
+	// Save html to json
 	handlerCommit(handler) {
 		this.handlerCommit = handler;
 	}
-}
 
-/*
-* Custom element that contains a category's  website
-* 
-*/
-class CategoryWeb extends HTMLAnchorElement {
-	constructor() {
-		super();
-	}
-
-	connectedCallback() {
-
-	}
-
-	build(web) {
-		this.classList.add(CLASS_NAME_WEB);
-		this.createLink(web);
-
-		// Allow drag elements over this node
-		this.addEventListener('dragover', event => {
-			event.preventDefault();
-		});
-
-		// Allow drag elements enter this node
-		this.addEventListener('dragenter', event => {
-			event.preventDefault();
-		});
-
-		// Set this category id in a property of the event data
-		this.addEventListener('dragstart', (event) => {
-			event.dataTransfer.setData(DATA_TRANSFER_DRAG_ID, this.id);
-			event.stopPropagation();
-		});
-
-		this.addEventListener('drop', (event) => {
-			let id = event.dataTransfer.getData(DATA_TRANSFER_DRAG_ID);
-			let draggedElement = document.getElementById(id);
-
-			switch (draggedElement.tagName) {
-				case 'A':
-					//Append category before/after current Target
-					this.handlerDrop(draggedElement, event.currentTarget);
-					break;
-
-				default:
-					break;
-			}
-		});
-	}
-
-	createLink(web) {
-		this.draggable = true;
-
-		this.id = web.url;
-		this.innerHTML = web.name;
-
-		this.id = web.url;
-		this.target = '_blank';
-		this.href = web.url;
-		this.innerText = web.name;
-	}
-
+	// Function for dropping nodes
 	handlerDrop(handler) {
 		this.handlerDrop = handler;
 	}
@@ -397,11 +380,12 @@ class CategoryWeb extends HTMLAnchorElement {
 * On click it transforms into an input allowing editing the category name.
 * On blur or keypress == Enter transforms back to title.
 *
-* After instantiation with document.createElement(...), 
-* it needs to set the handlerCommit with the setter.
-* e.g: 
-* 		const title = document.createElement('category-title');
-*		title.handlerCommit = () => this.commitWebs(this.handlerReplace);
+* Example of instantiation:
+*	const categoryTitle = document.createElement('category-title');
+*	categoryTitle.title = title;
+*	categoryTitle.handlerDrop = handlerDrop;
+*	categoryTitle.handlerCommit = handlerCommit;
+*	categoryTitle.build();
 */
 class CategoryTitle extends HTMLElement {
 	constructor() {
@@ -531,6 +515,117 @@ class CategoryTitle extends HTMLElement {
 	}
 }
 
+/*
+* Custom element that contains a list of websites of the same category
+* Can changes it's position with other CategoryList by drag and drop
+*
+* Example of instantiation:
+*	const categoryList = document.createElement('category-list');
+*	categoryList.handlerDrop = handlerDrop;
+*	categoryList.handlerCommit = handlerCommit;
+*	categoryList.build();
+*/
+class CategoryList extends HTMLElement {
+	constructor() {
+		super();
+	}
+
+	connectedCallback() {
+
+	}
+
+	build() {
+		this.webList = this.appendChild(document.createElement('ul'));
+	}
+
+	addWeb(web) {
+		var categoryWeb = document.createElement('a', { is: ELEMENT_CATEGORY_WEB });
+		categoryWeb.handlerDrop = this.handlerDrop;
+		categoryWeb.build(web);
+		this.webList.append(categoryWeb);
+	}
+
+	handlerDrop(handler) {
+		this.handlerDrop = handler;
+	}
+
+	handlerCommit(handler) {
+		this.handlerCommit = handler;
+	}
+}
+
+/*
+* Custom element that contains a website
+* Can changes it's position with other CategoryWeb by drag and drop
+* 
+* Example of instantiation:
+*	var categoryWeb = document.createElement('a', { is: 'category-web' });
+*	categoryWeb.handlerDrop = handlerDrop;
+*	categoryWeb.build(web);
+*	categoryList.webList.append(categoryWeb);
+*/
+class CategoryWeb extends HTMLAnchorElement {
+	constructor() {
+		super();
+	}
+
+	connectedCallback() {
+
+	}
+
+	build(web) {
+		this.classList.add(CLASS_NAME_WEB);
+		this.createLink(web);
+
+		// Allow drag elements over this node
+		this.addEventListener('dragover', event => {
+			event.preventDefault();
+		});
+
+		// Allow drag elements enter this node
+		this.addEventListener('dragenter', event => {
+			event.preventDefault();
+		});
+
+		// Set this category id in a property of the event data
+		this.addEventListener('dragstart', (event) => {
+			event.dataTransfer.setData(DATA_TRANSFER_DRAG_ID, this.id);
+			event.stopPropagation();
+		});
+
+		this.addEventListener('drop', (event) => {
+			let id = event.dataTransfer.getData(DATA_TRANSFER_DRAG_ID);
+			let draggedElement = document.getElementById(id);
+
+			switch (draggedElement.tagName) {
+				case 'A':
+					//Append category before/after current Target
+					this.handlerDrop(draggedElement, event.currentTarget);
+					break;
+
+				default:
+					break;
+			}
+		});
+	}
+
+	createLink(web) {
+		this.draggable = true;
+
+		this.id = web.url;
+		this.innerHTML = web.name;
+
+		this.id = web.url;
+		this.target = '_blank';
+		this.href = web.url;
+		this.innerText = web.name;
+	}
+
+	handlerDrop(handler) {
+		this.handlerDrop = handler;
+	}
+}
+
 /* 
 * Custom element for adding new webs.
 * Placed at the bottom of each category with the '+' symbol. 
@@ -539,11 +634,10 @@ class CategoryTitle extends HTMLElement {
 * Has an Add button that saves the new website and a Cancel button that
 * reverts the element to the original state.
 * 
-* After instantiation with document.createElement(...), 
-* it needs to set the handlerCommit with the setter.
-* e.g: 
-*		let newWeb = category.appendChild(document.createElement('category-new-web-button'));
-*		newWeb.handler = this.handlerCommit;
+* Example of instantiation:
+*	categoryNewWeb = document.createElement('category-new-web-button');
+*	categoryNewWeb.handlerAddWeb = handlerAddWeb;
+*	categoryNewWeb.build();
 * */
 class CategoryNewWeb extends HTMLElement {
 	constructor() {
@@ -678,85 +772,8 @@ class CategoryNewWeb extends HTMLElement {
 	}
 }
 
-/* 
-* Custom element that wraps
- */
-class CategoryController extends HTMLElement {
-	constructor() {
-		super();
-
-		this.title = null;
-		this.header = null;
-		this.content = null;
-		this.footer = null;
-
-		this.handlerAddWeb = null;
-		this.handlerCommit = null;
-		this.handlerDrop = null;
-	}
-
-	connectedCallback() {
-	}
-
-	/* 
-	* 
-	*/
-	build() {
-
-		if (this.title == null) throw new Error('Title is missing');
-
-		this.id = this.title;
-		this.classList.add(CLASS_NAME_CATEGORY);
-
-		this.header = document.createElement(ELEMENT_CATEGORY_TITLE);
-		this.header.title = this.title;
-		this.header.handlerDrop = this.handlerDrop;
-		this.header.handlerCommit = this.handlerCommit;
-		this.header.build();
-
-		this.content = document.createElement(ELEMENT_CATEGORY_LIST);
-		this.content.handlerDrop = this.handlerDrop;
-		this.content.handlerCommit = this.handlerCommit;
-		this.content.build();
-
-		this.footer = document.createElement(ELEMENT_CATEGORY_NEW_WEB);
-		this.footer.handlerAddWeb = this.handlerAddWeb;
-		this.footer.build();
-
-
-		this.append(this.header, this.content, this.footer);
-	}
-
-	title(title) {
-		this.title = title;
-	}
-
-	getTitle() {
-		return this.title;
-	}
-
-	addWeb(web) {
-		this.content.addWeb(web);
-	}
-
-	// Save web
-	handlerAddWeb(handler) {
-		this.handlerAddWeb = handler;
-	}
-
-	// Save html to json
-	handlerCommit(handler) {
-		this.handlerCommit = handler;
-	}
-
-	// Function for dropping nodes
-	handlerDrop(handler) {
-		this.handlerDrop = handler;
-	}
-}
-
-customElements.define(ELEMENT_CATEGORY_NEW_WEB, CategoryNewWeb);
-customElements.define(ELEMENT_CATEGORY_TITLE, CategoryTitle);
-customElements.define(ELEMENT_CATEGORY_WEB, CategoryWeb, { extends: 'a' });
-customElements.define(ELEMENT_CATEGORY_LIST, CategoryList);
 customElements.define(ELEMENT_CATEGORY_CONTROLLER, CategoryController);
+customElements.define(ELEMENT_CATEGORY_TITLE, CategoryTitle);
+customElements.define(ELEMENT_CATEGORY_LIST, CategoryList);
+customElements.define(ELEMENT_CATEGORY_WEB, CategoryWeb, { extends: 'a' });
+customElements.define(ELEMENT_CATEGORY_NEW_WEB, CategoryNewWeb);
