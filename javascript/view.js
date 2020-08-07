@@ -1,3 +1,31 @@
+/* Constants */
+var ID_ROOT = '#root';
+var CLASS_WEB = '.web';
+
+var CLASS_NAME_WEB_CONTAINER = 'webContainer';
+var CLASS_NAME_CATEGORY = 'category';
+var CLASS_NAME_WEB = 'web';
+
+var ELEMENT_CATEGORY_CONTROLLER = 'category-controller';
+var ELEMENT_CATEGORY_TITLE = 'category-title';
+var ELEMENT_CATEGORY_LIST = 'category-list';
+var ELEMENT_CATEGORY_WEB = 'category-web';
+var ELEMENT_CATEGORY_NEW_WEB = 'category-new-web-button';
+
+var DATA_TRANSFER_DRAG_ID = 'dragId';
+
+var IMPORT = 'Import';
+var EXPORT = 'Export';
+var ADD = 'ADD';
+var CANCEL = 'CANCEL';
+var SEARCH_BOX_PLACEHOLDER = 'Filter ...';
+var EMPTY_STATE = 'Empty! Add a website?'
+var ADD_WEBS = 'Add some websites first!';
+var NEW_CATEGORY = 'New category';
+
+var ERROR_EXPORT = 'Error exporting webs';
+var ERROR_SAVE = 'Error saving title changes'
+
 /**
  * @class View
  *
@@ -6,31 +34,31 @@
 class View {
 	constructor() {
 		this.currentElementBeingDragged = null;
-		this.handlerCommit = null;
+		this.handlerAddWeb = null;
 		this.handlerReplace = null;
 
 		// Root element
-		this.app = this.getElement('#root');
+		this.app = this.getElement(ID_ROOT);
 
 		this.header = this.createElement('header');
 
 		// Title
 		this.title = this.createElement('h1');
-		this.title.textContent = this._getEmoji() + ' StartPage '+ this._getEmoji();
+		this.title.textContent = `${this._getEmoji()} StartPage ${this._getEmoji()}`;
 
 		// Form for import/export
 		this.formImportExport = this.createElement('form');
-		this.formImportExport.addEventListener('submit', event =>{
+		this.formImportExport.addEventListener('submit', event => {
 			event.preventDefault();
 		});
 
 		this.buttonImport = this.createElement('button');
-		this.buttonImport.textContent = 'Import';
+		this.buttonImport.textContent = IMPORT;
 
 		this.buttonExport = this.createElement('button');
-		this.buttonExport.textContent = 'Export';
+		this.buttonExport.textContent = EXPORT;
 
-		this.formImportExport.append (
+		this.formImportExport.append(
 			this.buttonImport,
 			this.buttonExport
 		)
@@ -38,18 +66,18 @@ class View {
 		// Search box
 		this.searchText = this.createElement('input');
 		this.searchText.type = 'text';
-		this.searchText.placeholder = 'Filter...';
+		this.searchText.placeholder = SEARCH_BOX_PLACEHOLDER;
 
 		// Web container
-		this.webContainer = this.createElement('div', 'webContainer');
+		this.webContainer = this.createElement('article', CLASS_NAME_WEB_CONTAINER);
 
-		this.header.append (
+		this.header.append(
 			this.formImportExport,
 			this.title,
 			this.searchText
 		)
 
-		this.app.append (
+		this.app.append(
 			this.header,
 			this.webContainer
 		)
@@ -59,96 +87,31 @@ class View {
 	// Create an element with an optional class and id
 	createElement(tag, className, idName) {
 		const element = document.createElement(tag);
-		if(className) element.classList.add(className);
-		if(idName) element.idName = 'id';
+		if (className) element.classList.add(className);
+		if (idName) element.idName = 'id';
 
 		return element;
 	}
 
-	createCategory(category) {
-
-		const categoryElement = this.createElement('category', 'category', category.id);
-		const webList = this.createElement('ul');
-		const categoryTitle = document.createElement('category-title');
-		categoryTitle.handlerCommit = () => this._commitWebs(this.handlerReplace);
-
-		categoryElement.id = category.id;
-
-		// Allow drag elements over categories
-		categoryElement.addEventListener('dragover', this.dragOver);
-		// Allow elements being dragged enter into categories nodes
-		categoryElement.addEventListener('dragenter', this.dragEnter);
-		
-		categoryElement.addEventListener('dragstart', (event) => {
-			event.dataTransfer.setData('dragElementId', event.target.parentElement.id);
-		});
-
-		categoryElement.addEventListener('drop', (event) =>{
-			event.preventDefault();
-			
-			let dragElementId = event.dataTransfer.getData('dragElementId');
-
-			let draggedElement = document.querySelector(`#${dragElementId}`);
-
-			switch (draggedElement.tagName) {
-				case 'CATEGORY':
-					// Append category before/after currentTarget
-					this.appendNode(draggedElement, event.currentTarget);
-					break;
-					case 'LI':
-						// Append li element to the category's ul (currentTarget)
-						event.currentTarget.querySelector('ul').appendChild(draggedElement);
-						default:
-							break;
-			}
-		});
-		
-		categoryElement.append(categoryTitle, webList);
-		
-		return categoryElement;
-	}
-
 	// Returns a Category with a AddWebElement
-	createEmptyCategory() {
-		let emptyCategory = this.createCategory({id: 'New category'});
-		let newWebButton = emptyCategory.appendChild(document.createElement('category-new-web-button'));
-		newWebButton.handler = this.handlerCommit;
-		return emptyCategory;
-	}
+	createEmptyCategory(id) {
 
-	createLink(web) {
-		const link = this.createElement('a');
-		link.id = web.url;
-		link.classList.add('link');
-		link.target = '_blank';
-		link.href = web.url;
-		link.innerText = web.name;
+		let wrapper = this.createElement('div');
+		let title = this.createElement('h4');
+		title.textContent = 'Add web for new category';
 
-		const row = this.createElement('li');
-		row.classList.add('web');
-		row.draggable = true;
-		row.append(link);
-		
-		row.addEventListener("dragstart", event => {
-			this.currentElementBeingDragged = row;
-		});
-		row.addEventListener("drop", (event) =>{
-			event.preventDefault();
-			if(this.currentElementBeingDragged.tagName === 'LI'){
-				this.appendNode(this.currentElementBeingDragged, event.currentTarget);
-			}
-		});
+		let emptyCategory = this.createElement(ELEMENT_CATEGORY_NEW_WEB);
+		emptyCategory.handlerAddWeb = (web) => this.handlerAddWeb(web);
+		emptyCategory.build();
 
-		return row;
+		wrapper.append(title, emptyCategory);
+
+		return wrapper;
 	}
 
 	_getEmoji() {
-		let emojis = ["🤡", "💩", "👻", "💀", "☠️", "👽", "👾", "🤖", "🎃", "🧠", "👀", "👁", "👨‍💻", "👩‍💻", "🧟‍♂️", "🧟‍♀️", "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯", "🦁", "🐮", "🐷", "🐸", "🐵", "🙈", "🙉", "🙊", "🐒", "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦅", "🦉", "🦇", "🐺", "🐗", "🐴", "🦄", "🐌", "🐢", "🐍", "🦎", "🦖", "🦕", "🐡", "🐠", "🐟", "🐬", "🐳", "🐋", "🦈", "🐊", "🐅", "🐆", "🦓", "🦍", "🐘", "🦛", "🦏", "🐪", "🐫", "🦒", "🦘", "🐃", "🐂", "🐄", "🐎", "🐖", "🐏", "🐑", "🦙", "🐐", "🦌", "🐕", "🐩", "🐈", "🐓", "🦃", "🦚", "🦜", "🦢", "🕊", "🐇", "🦝", "🦡", "🐁", "🐀", "🐿", "🦔", "🐉", "🐲", "🌵", "🎄", "🌲", "🌳", "🌴", "🌱", "🌿", "☘️", "🍀", "🎍", "🎋", "🍃", "🍂", "🍁", "🍄", "🐚", "🌾", "💐", "🌷", "🌹", "🥀", "🌺", "🌸", "🌼", "🌻", "🌞", "🌝", "🌛", "🌜", "🌚", "🌕", "🌖", "🌗", "🌘", "🌑", "🌒", "🌓", "🌔", "🌙", "🌎", "🌍", "🌏", "🪐", "💫", "⭐️", "🌟", "✨", "⚡️", "☄️", "💥", "🔥", "🌪", "🌈", ];
+		let emojis = ["🤡", "💩", "👻", "💀", "☠️", "👽", "👾", "🤖", "🎃", "🧠", "👀", "👁", "👨‍💻", "👩‍💻", "🧟‍♂️", "🧟‍♀️", "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯", "🦁", "🐮", "🐷", "🐸", "🐵", "🙈", "🙉", "🙊", "🐒", "🐔", "🐧", "🐦", "🐤", "🐣", "🐥", "🦆", "🦅", "🦉", "🦇", "🐺", "🐗", "🐴", "🦄", "🐌", "🐢", "🐍", "🦎", "🦖", "🦕", "🐡", "🐠", "🐟", "🐬", "🐳", "🐋", "🦈", "🐊", "🐅", "🐆", "🦓", "🦍", "🐘", "🦛", "🦏", "🐪", "🐫", "🦒", "🦘", "🐃", "🐂", "🐄", "🐎", "🐖", "🐏", "🐑", "🦙", "🐐", "🦌", "🐕", "🐩", "🐈", "🐓", "🦃", "🦚", "🦜", "🦢", "🕊", "🐇", "🦝", "🦡", "🐁", "🐀", "🐿", "🦔", "🐉", "🐲", "🌵", "🎄", "🌲", "🌳", "🌴", "🌱", "🌿", "☘️", "🍀", "🎍", "🎋", "🍃", "🍂", "🍁", "🍄", "🐚", "🌾", "💐", "🌷", "🌹", "🥀", "🌺", "🌸", "🌼", "🌻", "🌞", "🌝", "🌛", "🌜", "🌚", "🌕", "🌖", "🌗", "🌘", "🌑", "🌒", "🌓", "🌔", "🌙", "🌎", "🌍", "🌏", "🪐", "💫", "⭐️", "🌟", "✨", "⚡️", "☄️", "💥", "🔥", "🌪", "🌈",];
 		return emojis[Math.floor(Math.random() * emojis.length)];
-	}
-
-	setCurrentElementBeingDragged(element) {
-		this.currentElementBeingDragged = element;
 	}
 
 	getElement(selector) {
@@ -157,7 +120,7 @@ class View {
 
 	// Add web input getter
 	_getInputWeb() {
-		return {url: this.inputUrl.value, name: this.inputName.value, category: this.inputCategory.value};
+		return { url: this.inputUrl.value, name: this.inputName.value, category: this.inputCategory.value };
 	}
 
 	_inputAutoCompleteName(inputUrl, inputName) {
@@ -169,38 +132,14 @@ class View {
 		}
 	}
 
-	// Reset all inputs
-	_resetInput() {
-		this.inputUrl.value = '';
-		this.inputName.value = '';
-		this.inputCategory.value = '';
-		this.fileExplorer.value = '';
-		this.jsonTextbox.value = '';
-	}
-
-	// Reset a form inputs
-	_resetForm(form) {
-
-		let inputs = form.elements;
-
-		for (var i = 0; i <= inputs.length - 1; i++) {
-			if(inputs[i].tagName === 'INPUT' && inputs[i].type === 'text'){
-				inputs[i].value = '';
-			}
-		}
-	}
-
 	displayWebs(webs) {
 		// Delete all nodes
-		while(this.webContainer.firstChild) {
+		while (this.webContainer.firstChild) {
 			this.webContainer.removeChild(this.webContainer.firstChild);
 		}
 
 		// Show default message if there are 0 webs
-		if(webs.length === 0) {
-			const p = this.createElement('p');
-			p.textContent = 'Empty! Add a website?';
-			this.webContainer.append(p);
+		if (webs.length === 0) {
 			// Empty category
 			this.webContainer.append(this.createEmptyCategory());
 
@@ -208,24 +147,25 @@ class View {
 			let categories = [];
 
 			// Create web nodes
-			webs.forEach( web => {
-				let category = categories.find(c => c.id === web.category);
+			webs.forEach(web => {
+				let category = categories.find(c => c.getTitle() === web.category);
 
 				// If the category doesn't exists, create it
-				if(!category){
-					category = this.createCategory({id: web.category});
-					categories.push(category);
+				if (!category) {
+
+					category = document.createElement('category-controller');
+					category.title = web.category;
+					category.handlerAddWeb = (web) => this.handlerAddWeb(web);
+					category.handlerCommit = () => this.commitWebs();
+					category.handlerDrop = (draggedElement, target) => this.appendNode(draggedElement, target);
+					category.build();
+
 					this.webContainer.append(category);
+					categories.push(category);
 				}
 
 				// Append web to category
-				category.querySelector('ul').append(this.createLink(web));
-			});
-
-			// Add button por adding new webs
-			categories.forEach( category => {
-				let newWebButton = category.appendChild(document.createElement('category-new-web-button'));
-				newWebButton.handler = this.handlerCommit;
+				category.addWeb(web);
 			});
 
 			// Empty category
@@ -233,76 +173,49 @@ class View {
 		}
 	}
 
-	// Get all webs from html and commits them to localStorage
-	_commitWebs(handlerReplace) {
-		let webs = [];
+	// Get all webs from html and commits them to localStorage in Json format
+	commitWebs() {
+		if (this.handlerReplace) {
+			let webs = [];
 
-		// Iterate each category
-		this.app.querySelectorAll('category').forEach( category => {
-			// Iterate each web
-			category.querySelectorAll('.link').forEach( web => {
-				webs.push({
-					url: web.id,
-					name: web.innerText,
-					category: category.id
+			// Iterate each category
+			this.app.querySelectorAll('category-controller').forEach(category => {
+				// Iterate each web
+				category.querySelectorAll('a').forEach(web => {
+					webs.push({
+						url: web.id,
+						name: web.innerText,
+						category: category.id
+					});
 				});
 			});
-		});
 
-		handlerReplace(webs);
+			this.handlerReplace(webs);
+		}
 	}
 
-	/*
-		Drag functions
-	*/
-
-	// Gets current element dragged
-	dragStart() {
-		this.currentElementBeingDragged = this;
-	}
-
-	// Allow drag elements over nodes
-	dragOver(e) {
-		e.preventDefault();
-	}
-
-	// Allow elements being dragged enter into nodes
-	dragEnter(e) {
-		e.preventDefault();
-	}
-	
 	// Append node after/before another
 	appendNode(draggedNode, referenceNode) {
 		if (draggedNode != referenceNode) {
-			
 			let position = draggedNode.compareDocumentPosition(referenceNode);
 
 			if (position == Node.DOCUMENT_POSITION_FOLLOWING) {
 				// Append After
-				referenceNode.parentNode.insertBefore(draggedNode, referenceNode.nextSibling);		
+				referenceNode.parentNode.insertBefore(draggedNode, referenceNode.nextSibling);
 			} else {
 				// Append Before
 				referenceNode.parentNode.insertBefore(draggedNode, referenceNode);
 			}
-
-			this._commitWebs(this.handlerReplace);
+			this.commitWebs();
 		}
-	}
- 	
- 	appendAfter(draggedNode, referenceNode) {
- 		if (draggedNode != referenceNode) {
-			referenceNode.parentNode.insertBefore(draggedNode, referenceNode.nextSibling);
-		}
-
-		this._commitWebs(this.handlerReplace);
 	}
 
 	/*
 		Bind functions
 	*/
-	bindAddWeb(handlerCommit) {
+	bindAddWeb(handler) {
 
-		this.handlerCommit = handlerCommit;
+		this.handlerAddWeb = handler;
 	}
 
 	bindReplaceWebs(handlerReplace) {
@@ -327,7 +240,7 @@ class View {
 				let webs = handler();
 
 				if (webs && webs.length == 0) {
-					alert('Add some websites first!');
+					alert(ADD_WEBS);
 					return;
 				}
 
@@ -335,14 +248,14 @@ class View {
 				// File name format yyyy-mm-dd_startPage.json
 				let fileName = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + "_startPage.json";
 				let data = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(webs));
-				
+
 				// Create <a> tag for downloading the json
 				let link = this.createElement('a');
 				link.setAttribute("href", data);
 				link.setAttribute("download", fileName);
 				link.click();
-			} catch(e) {
-				alert('Error exporting webs');
+			} catch (e) {
+				alert(ERROR_EXPORT);
 				console.log(e.message);
 			}
 		});
@@ -355,7 +268,7 @@ class View {
 				fileExplorer.type = 'file';
 				fileExplorer.name = 'file_explorer';
 				fileExplorer.accept = '.json';
-				
+
 				fileExplorer.addEventListener('change', event => {
 					let reader = new FileReader();
 					reader.onload = event => {
@@ -364,10 +277,10 @@ class View {
 					}
 					reader.readAsText(event.target.files[0]);
 				});
-				
+
 				fileExplorer.click();
 
-			} catch(e) {
+			} catch (e) {
 				alert(e.message);
 			}
 		});
@@ -380,6 +293,105 @@ class View {
 	}
 }
 
+/*
+* Custom element that contains a list of websites of the same category
+* 
+*/
+class CategoryList extends HTMLElement {
+	constructor() {
+		super();
+	}
+
+	connectedCallback() {
+
+	}
+
+	build() {
+		this.webList = this.appendChild(document.createElement('ul'));
+	}
+
+	addWeb(web) {
+		var categoryWeb = document.createElement('a', { is: ELEMENT_CATEGORY_WEB });
+		categoryWeb.handlerDrop = this.handlerDrop;
+		categoryWeb.build(web);
+		this.webList.append(categoryWeb);
+	}
+
+	handlerDrop(handler) {
+		this.handlerDrop = handler;
+	}
+
+	handlerCommit(handler) {
+		this.handlerCommit = handler;
+	}
+}
+
+/*
+* Custom element that contains a category's  website
+* 
+*/
+class CategoryWeb extends HTMLAnchorElement {
+	constructor() {
+		super();
+	}
+
+	connectedCallback() {
+
+	}
+
+	build(web) {
+		this.classList.add(CLASS_NAME_WEB);
+		this.createLink(web);
+
+		// Allow drag elements over this node
+		this.addEventListener('dragover', event => {
+			event.preventDefault();
+		});
+
+		// Allow drag elements enter this node
+		this.addEventListener('dragenter', event => {
+			event.preventDefault();
+		});
+
+		// Set this category id in a property of the event data
+		this.addEventListener('dragstart', (event) => {
+			event.dataTransfer.setData(DATA_TRANSFER_DRAG_ID, this.id);
+			event.stopPropagation();
+		});
+
+		this.addEventListener('drop', (event) => {
+			let id = event.dataTransfer.getData(DATA_TRANSFER_DRAG_ID);
+			let draggedElement = document.getElementById(id);
+
+			switch (draggedElement.tagName) {
+				case 'A':
+					//Append category before/after current Target
+					this.handlerDrop(draggedElement, event.currentTarget);
+					break;
+
+				default:
+					break;
+			}
+		});
+	}
+
+	createLink(web) {
+		this.draggable = true;
+
+		this.id = web.url;
+		this.innerHTML = web.name;
+
+		this.id = web.url;
+		this.target = '_blank';
+		this.href = web.url;
+		this.innerText = web.name;
+	}
+
+	handlerDrop(handler) {
+		this.handlerDrop = handler;
+	}
+}
+
 /* 
 * Custom element title for the category element.
 * On click it transforms into an input allowing editing the category name.
@@ -389,87 +401,135 @@ class View {
 * it needs to set the handlerCommit with the setter.
 * e.g: 
 * 		const title = document.createElement('category-title');
-*		title.handlerCommit = () => this._commitWebs(this.handlerReplace);
+*		title.handlerCommit = () => this.commitWebs(this.handlerReplace);
 */
-customElements.define('category-title',
-	class extends HTMLElement {
-		constructor() {
-			super();
+class CategoryTitle extends HTMLElement {
+	constructor() {
+		super();
 
-			// Received with setter after instantiation
-			this.handlerCommit = null;
-		}
-
-		connectedCallback() {
-			this.parent = this.parentElement;
-
-			this.categoryTitle = this.appendChild(this.createTitle());
-			this.categoryInput = this.appendChild(this.createInput());
-		}
-		
-		createTitle() {	
-			const title = document.createElement('span');
-			title.textContent = this.parent.id;
-		
-			title.addEventListener('click', () => {
-				this.showInput(title.textContent);
-			});
-
-			return title;
-		}
-
-		createInput(){
-			const input = document.createElement('input');
-			input.type = 'text';
-			input.style.display = 'none';
-
-			input.addEventListener('keydown', event => {
-				if (event.key === 'Enter') {
-					this.saveTitle(input.value);
-				}
-			});
-			input.addEventListener('blur', () => {
-				this.saveTitle(input.value);
-			});	
-			return input;
-		}
-
-		showTitle() {
-			this.categoryTitle.style.display = 'block';
-			this.categoryInput.style.display = 'none';
-			this.draggable = true;
-		}
-
-		showInput(text) {
-			this.draggable = false;
-			this.categoryTitle.style.display = 'none';
-			this.categoryInput.value = text;
-			this.categoryInput.style.display = 'block';
-			this.categoryInput.focus();
-		}
-
-		// Save category name changes from the input
-		saveTitle(newTitle) {
-			// If is not empty and not equal to the old name, save
-			if (newTitle != "" && this.parent.id != newTitle) {
-				try {
-					this.parent.id = newTitle;
-					this.handlerCommit();
-				} catch (error) {
-					alert('Error saving title changes');
-					console.log(`Error saving title changes: ${error.message}`);
-				}
-			}
-
-			this.showTitle();
-		}
-
-		// Setter. Gets function for saving webs
-		handlerCommit(handler) {
-			this.handlerCommit = handler;
-		}
+		// Received with setter after instantiation
+		this.handlerCommit = null;
 	}
- );
+
+	connectedCallback() {
+		this.parent = this.parentElement;
+	}
+
+	build() {
+		this.categoryTitle = this.appendChild(this.createTitle());
+		this.categoryInput = this.appendChild(this.createInput());
+
+		this.draggable = true;
+
+		this.setEvents();
+	}
+
+	setEvents() {
+		// Allow drag elements over this node
+		this.addEventListener('dragover', event => {
+			event.preventDefault();
+		});
+
+		// Allow drag elements enter this node
+		this.addEventListener('dragenter', event => {
+			event.preventDefault();
+		});
+
+		// Set this category id in a property of the event data
+		this.addEventListener('dragstart', (event) => {
+			event.dataTransfer.setData(DATA_TRANSFER_DRAG_ID, this.parentElement.id);
+		});
+
+		this.addEventListener('drop', (event) => {
+			let id = event.dataTransfer.getData(DATA_TRANSFER_DRAG_ID);
+			let draggedElement = document.getElementById(id);
+
+			switch (draggedElement.tagName) {
+				case ELEMENT_CATEGORY_CONTROLLER.toUpperCase():
+					//Append category before/after current Target
+					this.handlerDrop(draggedElement, event.currentTarget.parentElement)
+					break;
+
+				default:
+					break;
+			}
+		});
+	}
+
+	createTitle() {
+		const title = document.createElement('span');
+		if (this.title) title.textContent = this.title;
+
+		title.addEventListener('click', () => {
+			this.showInput(title.textContent);
+		});
+
+		return title;
+	}
+
+	title(title) {
+		this.title = title;
+	}
+
+	createInput() {
+		const input = document.createElement('input');
+		input.type = 'text';
+		input.style.display = 'none';
+
+		input.addEventListener('keydown', event => {
+			if (event.key === 'Enter') {
+				this.saveTitle(input.value);
+			}
+		});
+		input.addEventListener('blur', () => {
+			this.saveTitle(input.value);
+		});
+		return input;
+	}
+
+	showTitle() {
+		this.categoryTitle.style.display = 'block';
+		this.categoryInput.style.display = 'none';
+		this.draggable = true;
+	}
+
+	showInput(text) {
+		this.draggable = false;
+		this.categoryTitle.style.display = 'none';
+		this.categoryInput.value = text;
+		this.categoryInput.style.display = 'block';
+		this.categoryInput.focus();
+	}
+
+	// Save category name changes from the input
+	saveTitle(newTitle) {
+		// If is not empty and not equal to the old name, save
+		if (newTitle != "" && this.parent.id != newTitle) {
+			let oldTitle = this.parent.id;
+			try {
+				this.parent.id = newTitle;
+				this.handlerCommit();
+			} catch (error) {
+				this.parent.id = oldTitle;
+				alert(ERROR_SAVE);
+				console.log(`Error saving title changes: ${error.message}`);
+			} finally {
+				this.categoryTitle.textContent = this.parent.id;
+			}
+		}
+
+		this.showTitle();
+	}
+
+	// Setter. Gets function for saving webs
+	handlerCommit(handler) {
+		this.handlerCommit = handler;
+	}
+
+	handlerDrop(handler) {
+		this.handlerDrop = handler;
+	}
+}
 
 /* 
 * Custom element for adding new webs.
@@ -485,135 +545,218 @@ customElements.define('category-title',
 *		let newWeb = category.appendChild(document.createElement('category-new-web-button'));
 *		newWeb.handler = this.handlerCommit;
 * */
-customElements.define('category-new-web-button',
-	class extends HTMLElement {
-		constructor() {
-			super();
+class CategoryNewWeb extends HTMLElement {
+	constructor() {
+		super();
 
-			// Received with setter after instantiation
-			this.handlerCommit = null;
-			
-			this._form = null;
-		}
+		// Received with setter after instantiation
+		this.handlerAddWeb = null;
+	}
 
-		connectedCallback() {
-			this._button = this.appendChild(this.createButton());
-		}
+	connectedCallback() {
+	}
 
-		createBase() {
-			const row = document.createElement('li');
-			row.draggable = false;
-			row.style.flexDirection = 'column';
-			row.style.userSelect = 'none';
-			return row;
-		}
+	build() {
+		this._button = this.appendChild(this.createButton());
+	}
 
-		createButton() {
-			const row = this.createBase();
-			row.addEventListener('click', () => {
-				this.showForm();
-			});
+	createBase() {
+		const row = document.createElement('div');
+		row.draggable = false;
+		row.style.flexDirection = 'column';
+		row.style.userSelect = 'none';
+		row.style.width = '100%';
+		return row;
+	}
 
-			const text = document.createElement('p');
-			text.textContent = '+';
-			text.style.textAlign = 'center';
-			text.style.fontSize = 'x-large';
-			text.style.margin = 0;
+	createButton() {
+		const row = this.createBase();
+		row.addEventListener('click', () => {
+			this.showForm();
+		});
 
-			row.append(text);
-			return row;
-		}
+		const text = document.createElement('p');
+		text.textContent = '+';
+		text.style.textAlign = 'center';
+		text.style.fontSize = 'x-large';
+		text.style.margin = 0;
 
-		createForm() {
-			// Base
-			const row = this.createBase();
+		row.append(text);
+		return row;
+	}
 
-			// Form
-			const _form = document.createElement('form');
-			_form.style.display = 'flex';
-			_form.style.flexDirection = 'column';
-			_form.addEventListener('submit', event => {
-				event.preventDefault();
-			});
+	createForm() {
+		// Base
+		const row = this.createBase();
 
-			// Inputs
-			const inputUrl = document.createElement('input');
-			inputUrl.type = 'text';
-			inputUrl.placeholder = 'Url';
-			inputUrl.name = 'url';
-			inputUrl.required = true;
+		// Form
+		const _form = document.createElement('form');
+		_form.style.display = 'flex';
+		_form.style.flexDirection = 'column';
+		_form.addEventListener('submit', event => {
+			event.preventDefault();
+		});
 
-			const inputName = document.createElement('input');
-			inputName.type = 'text';
-			inputName.placeholder = 'Name';
-			inputName.name = 'name';
-			inputName.required = true;
-			inputName.addEventListener('focus', () => {
-				this._inputAutoCompleteName(inputUrl, inputName)
-			});
+		// Inputs
+		const inputUrl = document.createElement('input');
+		inputUrl.type = 'text';
+		inputUrl.placeholder = 'Url';
+		inputUrl.name = 'url';
+		inputUrl.required = true;
 
-			// Button Add
-			const buttonAdd = document.createElement('button');
-			buttonAdd.textContent = 'ADD';
+		const inputName = document.createElement('input');
+		inputName.type = 'text';
+		inputName.placeholder = 'Name';
+		inputName.name = 'name';
+		inputName.required = true;
+		inputName.addEventListener('focus', () => {
+			this._inputAutoCompleteName(inputUrl, inputName)
+		});
 
-			buttonAdd.addEventListener('click', () => {
-				if(_form.checkValidity()){
-					this.handler({
-						url: inputUrl.value,
-						name: inputName.value,
-						category: this.parentElement.id
-					});
-				}
-			});
+		// Button Add
+		const buttonAdd = document.createElement('button');
+		buttonAdd.textContent = ADD;
 
-			// Button Cancel
-			const buttonCancel = document.createElement('button');
-			buttonCancel.textContent = 'CANCEL';
-			buttonCancel.classList.add('red');
-
-			// Listener click
-			buttonCancel.addEventListener('click', event => {
-				this.showButton();
-			});
-
-			_form.addEventListener('submit', event => {
-				event.preventDefault();
-			});
-
-			// Append
-			_form.append(inputUrl, inputName, buttonAdd, buttonCancel);
-			row.append(_form);
-
-			return row;
-		}
-		
-		showButton() {
-			this._form.remove();
-			this._button.style.display = 'flex';
-		}
-
-		showForm(){
-			this._button.style.display = 'none';
-			
-			this._form = this.appendChild(this.createForm());
-			this._form.querySelector('input').focus();
-		}
-
-		// Suggest web name with url domain e.g.: https://www.github.com -> Github
-		_inputAutoCompleteName(inputUrl, inputName) {
-			let url = inputUrl.value;
-			let name = inputName.value;
-			if (url != "" && name == "") {
-				// Get domain name without .com.../.net.../etc
-				let n = url.match(/^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^.:\/?\n]+)?/)[1];
-				// First char to upper
-				inputName.value = n.charAt(0).toUpperCase() + n.slice(1);
+		buttonAdd.addEventListener('click', () => {
+			if (_form.checkValidity()) {
+				this.handlerAddWeb({
+					url: inputUrl.value,
+					name: inputName.value,
+					category: this.parentElement.id ? this.parentElement.id : 'New category'
+				});
 			}
-		}
+		});
 
-		// Setter. Gets function for saving webs
-		handlerCommit(handler) {
-			this.handlerCommit = handler;
+		// Button Cancel
+		const buttonCancel = document.createElement('button');
+		buttonCancel.textContent = CANCEL;
+		buttonCancel.classList.add('red');
+
+		// Listener click
+		buttonCancel.addEventListener('click', event => {
+			this.showButton();
+		});
+
+		_form.addEventListener('submit', event => {
+			event.preventDefault();
+		});
+
+		// Append
+		_form.append(inputUrl, inputName, buttonAdd, buttonCancel);
+		row.append(_form);
+
+		return row;
+	}
+
+	showButton() {
+		this._form.remove();
+		this._button.style.display = 'flex';
+	}
+
+	showForm() {
+		this._button.style.display = 'none';
+
+		this._form = this.appendChild(this.createForm());
+		this._form.querySelector('input').focus();
+	}
+
+	// Suggest web name with url domain e.g.: https://www.github.com -> Github
+	_inputAutoCompleteName(inputUrl, inputName) {
+		let url = inputUrl.value;
+		let name = inputName.value;
+		if (url != "" && name == "") {
+			// Get domain name without .com.../.net.../etc
+			let n = url.match(/^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^.:\/?\n]+)?/)[1];
+			// First char to upper
+			inputName.value = n.charAt(0).toUpperCase() + n.slice(1);
 		}
 	}
-);
+
+	// Setter. Gets function for saving webs
+	handlerAddWeb(handler) {
+		this.handlerAddWeb = handler;
+	}
+}
+
+/* 
+* Custom element that wraps
+ */
+class CategoryController extends HTMLElement {
+	constructor() {
+		super();
+
+		this.title = null;
+		this.header = null;
+		this.content = null;
+		this.footer = null;
+
+		this.handlerAddWeb = null;
+		this.handlerCommit = null;
+		this.handlerDrop = null;
+	}
+
+	connectedCallback() {
+	}
+
+	/* 
+	* 
+	*/
+	build() {
+
+		if (this.title == null) throw new Error('Title is missing');
+
+		this.id = this.title;
+		this.classList.add(CLASS_NAME_CATEGORY);
+
+		this.header = document.createElement(ELEMENT_CATEGORY_TITLE);
+		this.header.title = this.title;
+		this.header.handlerDrop = this.handlerDrop;
+		this.header.handlerCommit = this.handlerCommit;
+		this.header.build();
+
+		this.content = document.createElement(ELEMENT_CATEGORY_LIST);
+		this.content.handlerDrop = this.handlerDrop;
+		this.content.handlerCommit = this.handlerCommit;
+		this.content.build();
+
+		this.footer = document.createElement(ELEMENT_CATEGORY_NEW_WEB);
+		this.footer.handlerAddWeb = this.handlerAddWeb;
+		this.footer.build();
+
+
+		this.append(this.header, this.content, this.footer);
+	}
+
+	title(title) {
+		this.title = title;
+	}
+
+	getTitle() {
+		return this.title;
+	}
+
+	addWeb(web) {
+		this.content.addWeb(web);
+	}
+
+	// Save web
+	handlerAddWeb(handler) {
+		this.handlerAddWeb = handler;
+	}
+
+	// Save html to json
+	handlerCommit(handler) {
+		this.handlerCommit = handler;
+	}
+
+	// Function for dropping nodes
+	handlerDrop(handler) {
+		this.handlerDrop = handler;
+	}
+}
+
+customElements.define(ELEMENT_CATEGORY_NEW_WEB, CategoryNewWeb);
+customElements.define(ELEMENT_CATEGORY_TITLE, CategoryTitle);
+customElements.define(ELEMENT_CATEGORY_WEB, CategoryWeb, { extends: 'a' });
+customElements.define(ELEMENT_CATEGORY_LIST, CategoryList);
+customElements.define(ELEMENT_CATEGORY_CONTROLLER, CategoryController);
