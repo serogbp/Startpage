@@ -334,10 +334,9 @@ class CategoryController extends HTMLElement {
 		this.header.handlerCommit = this.handlerCommit;
 		this.header.build();
 
-		this.content = document.createElement(ELEMENT_CATEGORY_LIST);
+		this.content = document.createElement('ul', {is: ELEMENT_CATEGORY_LIST});
 		this.content.handlerDrop = this.handlerDrop;
 		this.content.handlerCommit = this.handlerCommit;
-		this.content.build();
 
 		this.footer = document.createElement(ELEMENT_CATEGORY_NEW_WEB);
 		this.footer.handlerAddWeb = this.handlerAddWeb;
@@ -428,16 +427,11 @@ class CategoryTitle extends HTMLElement {
 			let id = event.dataTransfer.getData(DATA_TRANSFER_DRAG_ID);
 			let draggedElement = document.getElementById(id);
 
-			switch (draggedElement.tagName) {
-				case ELEMENT_CATEGORY_CONTROLLER.toUpperCase():
+			if (draggedElement.tagName === ELEMENT_CATEGORY_CONTROLLER.toUpperCase()) 
 					//Append category before/after current Target
 					this.handlerDrop(draggedElement, event.currentTarget.parentElement)
-					break;
-
-				default:
-					break;
 			}
-		});
+		);
 	}
 
 	createTitle() {
@@ -523,9 +517,8 @@ class CategoryTitle extends HTMLElement {
 *	const categoryList = document.createElement('category-list');
 *	categoryList.handlerDrop = handlerDrop;
 *	categoryList.handlerCommit = handlerCommit;
-*	categoryList.build();
 */
-class CategoryList extends HTMLElement {
+class CategoryList extends HTMLUListElement {
 	constructor() {
 		super();
 	}
@@ -534,15 +527,11 @@ class CategoryList extends HTMLElement {
 
 	}
 
-	build() {
-		this.webList = this.appendChild(document.createElement('ul'));
-	}
-
 	addWeb(web) {
 		var categoryWeb = document.createElement('a', { is: ELEMENT_CATEGORY_WEB });
 		categoryWeb.handlerDrop = this.handlerDrop;
 		categoryWeb.build(web);
-		this.webList.append(categoryWeb);
+		this.append(categoryWeb);
 	}
 
 	handlerDrop(handler) {
@@ -594,17 +583,14 @@ class CategoryWeb extends HTMLAnchorElement {
 		});
 
 		this.addEventListener('drop', (event) => {
+			// Prevent loading link	
+			event.preventDefault();
+			
 			let id = event.dataTransfer.getData(DATA_TRANSFER_DRAG_ID);
 			let draggedElement = document.getElementById(id);
-
-			switch (draggedElement.tagName) {
-				case 'A':
-					//Append category before/after current Target
-					this.handlerDrop(draggedElement, event.currentTarget);
-					break;
-
-				default:
-					break;
+			
+			if (draggedElement.tagName === 'A') {
+				this.handlerDrop(draggedElement, event.currentTarget);
 			}
 		});
 	}
@@ -774,6 +760,6 @@ class CategoryNewWeb extends HTMLElement {
 
 customElements.define(ELEMENT_CATEGORY_CONTROLLER, CategoryController);
 customElements.define(ELEMENT_CATEGORY_TITLE, CategoryTitle);
-customElements.define(ELEMENT_CATEGORY_LIST, CategoryList);
+customElements.define(ELEMENT_CATEGORY_LIST, CategoryList, { extends: 'ul'});
 customElements.define(ELEMENT_CATEGORY_WEB, CategoryWeb, { extends: 'a' });
 customElements.define(ELEMENT_CATEGORY_NEW_WEB, CategoryNewWeb);
