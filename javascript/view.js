@@ -47,8 +47,8 @@ class View {
 		this.title.textContent = `${this._getEmoji()} StartPage ${this._getEmoji()}`;
 
 		// Form for import/export
-		this.formImportExport = this.createElement('form');
-		this.formImportExport.addEventListener('submit', event => {
+		this.formButtons = this.createElement('form');
+		this.formButtons.addEventListener('submit', event => {
 			event.preventDefault();
 		});
 
@@ -58,7 +58,7 @@ class View {
 		this.buttonExport = this.createElement('button');
 		this.buttonExport.textContent = EXPORT;
 
-		this.formImportExport.append(
+		this.formButtons.append(
 			this.buttonImport,
 			this.buttonExport
 		)
@@ -72,7 +72,7 @@ class View {
 		this.webContainer = this.createElement('article', CLASS_NAME_WEB_CONTAINER);
 
 		this.header.append(
-			this.formImportExport,
+			this.formButtons,
 			this.title,
 			this.searchText
 		)
@@ -637,37 +637,23 @@ class CategoryNewWeb extends HTMLElement {
 	}
 
 	build() {
-		this._button = this.appendChild(this.createButton());
-	}
-
-	createBase() {
-		const row = document.createElement('div');
-		row.draggable = false;
-		row.style.flexDirection = 'column';
-		row.style.userSelect = 'none';
-		row.style.width = '100%';
-		return row;
+		this.createButton();
 	}
 
 	createButton() {
-		const row = this.createBase();
-		row.addEventListener('click', () => {
-			this.showForm();
-		});
 
 		const text = document.createElement('p');
 		text.textContent = '+';
-		text.style.textAlign = 'center';
-		text.style.fontSize = 'x-large';
-		text.style.margin = 0;
+		
+		text.addEventListener('click', () => {
+			this.showForm();
+		});
 
-		row.append(text);
-		return row;
+		this.append(text);
+		this._button = text;
 	}
 
 	createForm() {
-		// Base
-		const row = this.createBase();
 
 		// Form
 		const _form = document.createElement('form');
@@ -723,14 +709,13 @@ class CategoryNewWeb extends HTMLElement {
 
 		// Append
 		_form.append(inputUrl, inputName, buttonAdd, buttonCancel);
-		row.append(_form);
-
-		return row;
+		this._form = _form;
+		return _form;
 	}
 
 	showButton() {
 		this._form.remove();
-		this._button.style.display = 'flex';
+		this._button.style.display = 'block';
 	}
 
 	showForm() {

@@ -5,7 +5,7 @@
  */
 class Model {
 	constructor() {
-		this.webs = this._readLocalStorage();
+		this.webs = JSON.parse(localStorage.getItem('json')) || [];
 		this.filterWebs = [];
 	}
 
@@ -16,12 +16,8 @@ class Model {
 
 	// Save webs on localStorage
 	_commit(webs) {
-		localStorage.setItem('startpagewebs', JSON.stringify(webs));
+		localStorage.setItem('json', JSON.stringify(webs));
 		this.onWebListChanged(webs);
-	}
-
-	_readLocalStorage() {
-		return JSON.parse(localStorage.getItem('startpagewebs')) || [];
 	}
 
 	addWeb(web) {
