@@ -11,6 +11,8 @@ class Controller {
 		this.model = model
 		this.view = view
 
+		this.view.bindCommitSettings(this.handlerCommitSettings);
+		this.view.bindGetSettings(this.handlerGetSettings);
 		// TODO edit web
 		//this.view.bindEditWeb(this.handleEditWeb);
 		this.view.bindAddWeb(this.handleAddWeb);
@@ -25,6 +27,14 @@ class Controller {
 
 		// Pass the same View's function to the model
 		this.model.bindWebListChanged(this.onWebListChanged);
+	}
+
+	handlerGetSettings = (key) => {
+		return this.model.getSettings(key);
+	}
+
+	handlerCommitSettings = (key, value) => {
+		this.model.commitSettings(key, value);
 	}
 
 	onWebListChanged = (webs) => {

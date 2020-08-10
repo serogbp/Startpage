@@ -1,3 +1,46 @@
+/*
+* CSS Variables
+*/
+:root {
+	/* Light Theme */
+	--body-primary-light: #ffffff;
+	--body-secondary-light: #f7f7f7;
+	--body-primary-hover-light: #e1e1e1;
+
+	--text-primary-light: #444;
+	--text-secondary-light: white;
+	--button-primary-light: #007bff;
+	--button-secondary-light: #ff0000;
+	--input-border-light: #ccc;
+	--web-shadow-light: rgba(9,30,66,.25);
+
+	/* Dark theme */
+	--body-primary-dark: #272822;
+	--body-secondary-dark: #1F1F1F;
+	--body-primary-hover-dark: #3a3b32;
+
+	--text-primary-dark: #444;
+	--text-secondary-dark: #999999;
+
+	--button-primary-dark: #004792;
+	--button-secondary-dark: #750c0c;
+	--input-border-dark: #ccc;
+
+	--web-shadow-dark: #3a3b32;
+
+	--monokai-pink: #F92672;
+	--monokai-pink-dark: #911643;
+	--monokai-blue: #66D9EF;
+	--monokai-blue-dark: #4797a7;
+	--monokai-gree: #A6E22E;
+	--monokai-gree-dark: #70991f;
+	--monokai-orange: #FD971F;
+	--monokai-orange-dark: #834e11;
+}
+
+/*
+* Html
+*/
 *,
 *::before,
 *::after {
@@ -7,10 +50,29 @@
 html {
 	font-family: sans-serif;
 	font-size: 1rem;
-	color: #444;
-	background: #F4F5F7;
 }
 
+/* 
+* Root
+*/
+#root {
+	margin: 0;
+}
+.light #root {
+	color: var(--text-primary-light);
+	background: var(--body-secondary-light);
+}
+.dark #root {
+	background: var(--body-secondary-dark);
+}
+
+body {
+	margin: 0;
+}
+
+/*
+* Header
+*/
 header {
 	display: flex;
 	flex-flow: row wrap;
@@ -23,90 +85,103 @@ header {
 	left: 0;
 	right: 0;
 
-	background-color: white;
-	padding: 0 1rem;
+	padding: 1rem;
+}
+
+header h1 {
+	margin: 0;
 }
 
 header button {
 	margin-right: .5rem;
 }
 
-.webContainer {
-	margin-top: 6em;
+.light header {
+	background-color: var(--body-primary-light);
+}
+.dark header {
+	background: var(--body-primary-dark);
+	color: var(--monokai-pink-dark);
+}
+.dark header:hover {
+	color: var(--monokai-pink);
+}
 
+/* 
+* Web container
+*/
+.webContainer {
+	/* Because of the fixed position of header */
+	padding-top: 5rem;
+	
+	display: flex;
 	align-content: flex-start;
 	align-items: flex-start;
-	display: flex;
 	flex-flow: row nowrap;
 	justify-content: flex-start;
 }
 
-form {
-	display: flex;
-}
-
-[type="text"],
-button {
-	padding: .5rem 1rem;
-	font-size: 1rem;
-	border: 2px solid #ccc;
-	border-radius: 4px;
-}
-
-button {
-	cursor: pointer;
-	background: #007bff;
-	color: white;
-	border: 2px solid #007bff;
-}
-
-button.red {
-	background: #ff0000;
-	border: 2px solid #ff0000;
-}
-
-[type="text"]:active,
-[type="text"]:focus {
-	outline: 0;
-	border: 2px solid #007bff;
-}
-
-h1 {
-	color: #222;
-}
-
+/* 
+* Category controller
+*/
 category-controller {
 	margin: 0 1.3rem;
+	width: 11rem;
 }
 
-ul {
-	/* box-shadow: 0px 7px 10px -8px rgba(0,0,0,0.75); */
-	border-radius: 4px;
-	display: inline-block;
-	font-weight: 400;
-	padding: 0rem 1rem 0rem 0rem;
-	flex-grow: 0;
-}
-
-ul {
+category-controller ul {
 	padding: 0;
-	margin: 0;
 }
 
-.web, category-new-web-button {
+/*
+* Title
+*/
+category-title {
+	display: block;
+	font-weight: bold;
+	font-size: 1.3rem;
+	padding: 1rem 0;
+	user-select: none;
+	border-radius: 4px;
+}
+.dark category-title {
+	color: var(--monokai-gree-dark);
+}
+
+
+category-title:hover {
+	cursor: grab;
+}
+.light category-title:hover {
+	background: var(--body-primary-hover-light);
+}
+.dark category-title:hover {
+	background: var(--body-primary-hover-dark);
+	color:var(--monokai-gree);
+}
+
+category-title span:hover {
+	cursor: text;
+}
+
+category-title input {
+	width: 100%;
+}
+
+/*
+* Web
+*/
+.web {
 	display: flex;
-	flex-direction: column;
 	padding: 1rem;
 	margin-bottom: 1rem;
-	background: white;
 	border-radius: 4px;
-	box-shadow: 0 1px 0 rgba(9,30,66,.25);
-	width: 12rem;
 
 	text-decoration: none;
-	color: #222;
-
 	cursor: pointer;
+
+	text-decoration: none;
+	word-break: break-word;
 }
 
 .web p {
@@ -122,38 +197,117 @@ ul {
 	display: block;
 }
 
-category-new-web-button [type="text"],button {
+category-new-web-button {
+	display: flex;
+	flex-direction: column;
+	user-select: none;
+	margin-bottom: 1rem;
+	border-radius: 4px;
+
+	/* Without this, the style breaks */	
+	width: inherit;
+}
+
+category-new-web-button p {
+	text-align: center;
+	font-size: x-large;
+	padding: 1rem;
+	margin: 0;
+}
+
+category-new-web-button form {
+	padding: 1rem; 
+}
+
+category-new-web-button [type="text"], category-new-web-button button {
 	margin-bottom: .5rem;
 }
 
-.web:hover, category-new-web-button:hover, category-title:hover {
-	background: #e1e1e1;
+.light .web, 
+.light category-new-web-button {
+	background: var(--body-primary-light);
+	color: var(--text-primary-light);
+	box-shadow: 0 1px 0 var(--web-shadow-light);
+}
+.dark .web,
+.dark category-new-web-button {
+	background: var(--body-primary-dark);
+	color: #4797a7;
+	box-shadow: 0 1px 0 var(--web-shadow-dark);
 }
 
-.web a{
-	color: #222;
-	padding: 1rem;
-	text-decoration: none;
-	word-break: break-word;
-	width: 100%;
+.light .web:hover, 
+.light category-new-web-button:hover {
+	background: var(--body-primary-hover-light);
+}
+.dark .web:hover,
+.dark category-new-web-button:hover {
+	background: var(--body-primary-hover-dark);
+	box-shadow: 0 1px 0 var(--body-primary-dark);
+
+}
+.dark .web:hover,
+.dark category-new-web-button:hover {
+	color: var(--monokai-blue);
 }
 
-category-title {
-	display: block;
-	font-weight: bold;
-	font-size: 1.3rem;
-	padding: 1rem 0;
-	user-select: none;
+/*
+* Inputs
+*/
+form {
+	display: flex;
 }
 
-category-title input {
-	width: 100%;
+button,
+[type="text"] {
+	padding: .5rem 1rem;
+	font-size: 1rem;
+	border-radius: 4px;
 }
 
-category-title:hover {
-	cursor: grab;
+button {
+	cursor: pointer;
+}
+.light button {
+	background: var(--button-primary-light);
+	color: var(--text-secondary-light);
+	border: 1px solid var(--button-primary-light);
+}
+.dark button {
+	cursor: pointer;
+	background: var(--button-primary-dark);
+	color: var(--text-secondary-dark);
+	border: 1px solid var(--button-primary-dark);
 }
 
-category-title span:hover {
-	cursor: text;
+.light button.red {
+	background: var(--button-secondary-light);
+	border: 1px solid var(--button-secondary-light);
+}
+.dark button.red {
+	background: var(--button-secondary-dark);
+	border: 2px solid var(--button-secondary-dark);
+}
+
+.light [type="text"] {
+	border: 2px solid var(--input-border-light);
+}
+.dark [type="text"] {
+	background: #1F1F1F;
+	border: 2px solid var(--monokai-orange-dark);
+	color: var(--monokai-orange-dark);
+}
+
+.light [type="text"]:active,
+.light [type="text"]:focus {
+	outline: 0;
+}
+.light [type="text"]:active,
+.light [type="text"]:focus {
+	border: 2px solid var(--button-primary-light);
+}
+.dark [type="text"]:active,
+.dark [type="text"]:focus {
+	border: 2px solid var(--monokai-orange);
+	color: var(--monokai-orange);
 }

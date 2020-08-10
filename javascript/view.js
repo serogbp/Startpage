@@ -1,4 +1,8 @@
 /* Constants */
+
+var LIGHT_THEME = 'light';
+var DARK_THEME = 'dark';
+
 var ID_ROOT = '#root';
 var CLASS_WEB = '.web';
 
@@ -16,6 +20,7 @@ var DATA_TRANSFER_DRAG_ID = 'dragId';
 
 var IMPORT = 'Import';
 var EXPORT = 'Export';
+var THEME = 'Theme';
 var ADD = 'ADD';
 var CANCEL = 'CANCEL';
 var SEARCH_BOX_PLACEHOLDER = 'Filter ...';
@@ -33,9 +38,6 @@ var ERROR_SAVE = 'Error saving title changes'
  */
 class View {
 	constructor() {
-		this.currentElementBeingDragged = null;
-		this.handlerAddWeb = null;
-		this.handlerReplace = null;
 
 		// Root element
 		this.app = this.getElement(ID_ROOT);
@@ -58,9 +60,13 @@ class View {
 		this.buttonExport = this.createElement('button');
 		this.buttonExport.textContent = EXPORT;
 
+		this.buttonTheme = this.createElement('button');
+		this.buttonTheme.textContent = THEME;
+
 		this.formButtons.append(
 			this.buttonImport,
-			this.buttonExport
+			this.buttonExport,
+			this.buttonTheme
 		)
 
 		// Search box
@@ -83,6 +89,14 @@ class View {
 		)
 	}
 
+	setTheme() {
+		let theme = this.handlerGetSettings('theme');
+
+		if (theme) {
+			let body = document.querySelector('body');
+			body.className = theme;
+		}
+	}
 
 	// Create an element with an optional class and id
 	createElement(tag, className, idName) {
@@ -213,8 +227,27 @@ class View {
 	/*
 		Bind functions
 	*/
-	bindAddWeb(handler) {
+	bindGetSettings(handler) {
+		this.handlerGetSettings = handler;
 
+		this.setTheme();
+	}
+
+	bindCommitSettings(handler) {
+		this.handlerCommitSettings = handler;
+
+		// Load current theme
+		this.buttonTheme.addEventListener('click', () => {
+			let body = document.querySelector('body');
+
+			body.className = body.className == DARK_THEME? LIGHT_THEME : DARK_THEME;
+
+			this.handlerCommitSettings('theme', body.className);
+		});
+
+	}
+
+	bindAddWeb(handler) {
 		this.handlerAddWeb = handler;
 	}
 

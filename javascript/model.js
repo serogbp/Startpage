@@ -7,6 +7,17 @@ class Model {
 	constructor() {
 		this.webs = JSON.parse(localStorage.getItem('json')) || [];
 		this.filterWebs = [];
+
+		this.settings = JSON.parse(localStorage.getItem('settings')) || {};
+	}
+
+	commitSettings(key, value) {
+		this.settings[key] = value;
+		localStorage.setItem('settings', JSON.stringify(this.settings));
+	}
+
+	getSettings(key) {
+		return this.settings[key];
 	}
 
 	bindWebListChanged(callback){
