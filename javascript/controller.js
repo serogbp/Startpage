@@ -13,9 +13,9 @@ class Controller {
 
 		this.view.bindCommitSettings(this.handlerCommitSettings);
 		this.view.bindGetSettings(this.handlerGetSettings);
-		// TODO edit web
-		//this.view.bindEditWeb(this.handleEditWeb);
+		this.view.bindUpdateWeb(this.handleUpdateWeb);
 		this.view.bindAddWeb(this.handleAddWeb);
+		this.view.bindIsDuplicate(this.handlerIsDuplicate);
 		this.view.bindReplaceWebs(this.handleReplaceWebs);
 		this.view.bindDeleteWeb(this.handleDeleteWeb);
 		this.view.bindExportJson(this.handleExportJson);
@@ -45,12 +45,16 @@ class Controller {
 		this.model.addWeb(web);
 	}
 
+	handlerIsDuplicate = (web) => {
+		return this.model.isDuplicate(web);
+	}
+
 	handleReplaceWebs = (webs) => {
 		this.model.replaceWebs(webs);
 	}
 
-	handleEditWeb = (url, web) => {
-		this.model.editWeb(url, web);
+	handleUpdateWeb = (url, web) => {
+		this.model.updateWeb(url, web);
 	}
 
 	handleDeleteWeb = (url) => {

@@ -20,7 +20,7 @@ class Model {
 		return this.settings[key];
 	}
 
-	bindWebListChanged(callback){
+	bindWebListChanged(callback) {
 		// Store View's function for display the webs
 		this.onWebListChanged = callback;
 	}
@@ -32,8 +32,19 @@ class Model {
 	}
 
 	addWeb(web) {
-		this.webs.push(web);
-		this._commit(this.webs);
+		if (!this.isDuplicate(web)) {
+			if(web.category == 'Add a web') web.category = 'New category';
+			this.webs.push(web);
+			this._commit(this.webs);
+		}
+	}
+
+	isDuplicate(web) {
+		let duplicate = this.webs.find(w => w.url == web.url);
+		if (duplicate) {
+			alert(`The url already exist in: \n${web.category} - ${web.name}`);
+		}
+		return duplicate;
 	}
 
 	addWebs(webs) {
@@ -46,21 +57,21 @@ class Model {
 		this._commit(this.webs);
 	}
 
-	editWeb(url, updatedWeb) {
-		this.webs = this.webs.map(w =>
-			w.url === url ? {
-				url: w.url, name: updatedWeb.name, url: updatedWeb.url 
-			} : w );
-		this._commit(this.webs);
+	updateWeb(url, updatedWeb) {
+		/* If you are editing only the name (so the url doesn't changes)
+		or if the url is not duplicate */
+		if (url == updatedWeb.url || !this.isDuplicate(updatedWeb)) {
+			this.webs = this.webs.map(w =>
+				w.url === url ? {
+					url: updatedWeb.url, name: updatedWeb.name, category: updatedWeb.category
+				} : w);
+			this._commit(this.webs);
+		}
 	}
 
 	deleteWeb(url) {
 		this.webs = this.webs.filter(web => web.url !== url);
 		this._commit(this.webs);
-	}
-
-	findDuplicate(web) {
-		return this.webs.find(w => w.url == web.url)
 	}
 
 	importWebs(webs) {
@@ -70,13 +81,13 @@ class Model {
 
 	// Filter webs with fuzzy search
 	filterSearch(search) {
-		if(search === ""){
+		if (search === "") {
 			// If search empty, show all webs
 			this.onWebListChanged(this.webs);
 		} else {
 			this.filterWebs = [];
 
-			this.webs.forEach( web => {
+			this.webs.forEach(web => {
 				if (this.fuzzySearch(search, web.name)) this.filterWebs.push(web);
 			});
 
@@ -85,7 +96,7 @@ class Model {
 		}
 	}
 
-	fuzzySearch (search, item) {
+	fuzzySearch(search, item) {
 		search = search.toLowerCase();
 		item = item.toLowerCase();
 
@@ -105,7 +116,7 @@ class Model {
 				if (item.charCodeAt(j++) === nch) {
 					continue outer;
 				}
-			}	
+			}
 			return false;
 		}
 		return true;

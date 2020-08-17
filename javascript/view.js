@@ -15,12 +15,15 @@ var ELEMENT_CATEGORY_TITLE = 'category-title';
 var ELEMENT_CATEGORY_LIST = 'category-list';
 var ELEMENT_CATEGORY_WEB = 'category-web';
 var ELEMENT_CATEGORY_NEW_WEB = 'category-new-web-button';
+var ELEMENT_WEB_FORM = 'web-form';
 
 var DATA_TRANSFER_DRAG_ID = 'dragId';
 
 var IMPORT = 'Import';
 var EXPORT = 'Export';
 var THEME = 'Theme';
+var UPDATE = 'UPDATE';
+var DELETE = 'DELETE';
 var ADD = 'ADD';
 var CANCEL = 'CANCEL';
 var SEARCH_BOX_PLACEHOLDER = 'Filter ...';
@@ -171,6 +174,8 @@ class View {
 					category.title = web.category;
 					category.handlerAddWeb = (web) => this.handlerAddWeb(web);
 					category.handlerCommit = () => this.commitWebs();
+					category.handlerUpdate = (url, web) => this.handlerUpdate(url, web);
+					category.handlerDelete = (url) => this.handlerDelete(url);
 					category.handlerDrop = (draggedElement, target) => this.appendNode(draggedElement, target);
 					category.build();
 
@@ -251,18 +256,20 @@ class View {
 		this.handlerAddWeb = handler;
 	}
 
-	bindReplaceWebs(handlerReplace) {
-		this.handlerReplace = handlerReplace;
+	bindIsDuplicate(handler) {
+		this.handlerIsDuplicate = handler;
+	}
+
+	bindReplaceWebs(handler) {
+		this.handlerReplace = handler;
 	}
 
 	bindDeleteWeb(handler) {
-		this.webContainer.addEventListener('click', event => {
-			if (event.target.className === 'delete') {
-				// TODO get URL
-				const url = '';
-				handler(url);
-			}
-		});
+		this.handlerDelete = handler;
+	}
+
+	bindUpdateWeb(handler) {
+		this.handlerUpdate = handler;
 	}
 
 	// Export the webs to json file
@@ -367,9 +374,11 @@ class CategoryController extends HTMLElement {
 		this.header.handlerCommit = this.handlerCommit;
 		this.header.build();
 
-		this.content = document.createElement('ul', {is: ELEMENT_CATEGORY_LIST});
+		this.content = document.createElement('ul', { is: ELEMENT_CATEGORY_LIST });
 		this.content.handlerDrop = this.handlerDrop;
 		this.content.handlerCommit = this.handlerCommit;
+		this.content.handlerUpdate = this.handlerUpdate;
+		this.content.handlerDelete = this.handlerDelete;
 
 		this.footer = document.createElement(ELEMENT_CATEGORY_NEW_WEB);
 		this.footer.handlerAddWeb = this.handlerAddWeb;
@@ -399,6 +408,14 @@ class CategoryController extends HTMLElement {
 	// Save html to json
 	handlerCommit(handler) {
 		this.handlerCommit = handler;
+	}
+
+	handlerUpdate(handler) {
+		this.handlerUpdate = handler;
+	}
+
+	handlerDelete(handler) {
+		this.handlerDelete = handler;
 	}
 
 	// Function for dropping nodes
@@ -561,9 +578,12 @@ class CategoryList extends HTMLUListElement {
 	}
 
 	addWeb(web) {
-		var categoryWeb = document.createElement('a', { is: ELEMENT_CATEGORY_WEB });
+		var categoryWeb = document.createElement(ELEMENT_CATEGORY_WEB);
 		categoryWeb.handlerDrop = this.handlerDrop;
-		categoryWeb.build(web);
+		categoryWeb.handlerUpdate = this.handlerUpdate;
+		categoryWeb.handlerDelete = this.handlerDelete;
+		categoryWeb.web = web;
+		categoryWeb.build();
 		this.append(categoryWeb);
 	}
 
@@ -573,6 +593,14 @@ class CategoryList extends HTMLUListElement {
 
 	handlerCommit(handler) {
 		this.handlerCommit = handler;
+	}
+
+	handlerUpdate(handler) {
+		this.handlerUpdate = handler;
+	}
+
+	handlerDelete(handler) {
+		this.handlerDelete = handler;
 	}
 }
 
@@ -586,7 +614,7 @@ class CategoryList extends HTMLUListElement {
 *	categoryWeb.build(web);
 *	categoryList.webList.append(categoryWeb);
 */
-class CategoryWeb extends HTMLAnchorElement {
+class CategoryWeb extends HTMLElement {
 	constructor() {
 		super();
 	}
@@ -595,9 +623,60 @@ class CategoryWeb extends HTMLAnchorElement {
 
 	}
 
-	build(web) {
+	build() {
+		if (!this.web) throw new Error('Web is missing.');
+
+		this.id = this.web.url;
 		this.classList.add(CLASS_NAME_WEB);
-		this.createLink(web);
+
+		// Wrappers
+		this.linkWrapper = document.createElement('div');
+		this.formWrapper = document.createElement('div');
+		this.linkWrapper.classList.add('web_wrapper');
+		this.formWrapper.classList.add('web_formWrapper');
+
+		// link Wrapper
+		this.link = this.createLink(this.web);
+		this.options = this.createOptions();
+		this.linkWrapper.append(this.link, this.options);
+
+		this.setEvents();
+
+		this.append(this.linkWrapper, this.formWrapper);
+	}
+
+	createLink(web) {
+
+		const link = document.createElement('a');
+		link.id = web.url;
+
+		// Init <a> properties
+		link.target = '_blank';
+		link.href = web.url;
+		link.innerText = web.name;
+
+		return link;
+	}
+
+	createOptions() {
+		// Edit button
+		const options = document.createElement('div');
+		options.classList.add('web_options');
+		options.addEventListener('click', event => {
+			// Prevent open link
+			event.preventDefault();
+
+			const _form = document.createElement(ELEMENT_WEB_FORM);
+			_form.build(this.web, { text: UPDATE, handler: this.handlerUpdate }, { text: DELETE, handler: this.handlerDelete });
+
+			this.formWrapper.append(_form);
+			_form.querySelector('input').focus();
+		});
+		return options;
+	}
+
+	setEvents() {
+		this.draggable = true;
 
 		// Allow drag elements over this node
 		this.addEventListener('dragover', event => {
@@ -618,30 +697,30 @@ class CategoryWeb extends HTMLAnchorElement {
 		this.addEventListener('drop', (event) => {
 			// Prevent loading link	
 			event.preventDefault();
-			
+
 			let id = event.dataTransfer.getData(DATA_TRANSFER_DRAG_ID);
 			let draggedElement = document.getElementById(id);
-			
-			if (draggedElement.tagName === 'A') {
+
+			if (draggedElement.tagName === ELEMENT_CATEGORY_WEB.toUpperCase()) {
 				this.handlerDrop(draggedElement, event.currentTarget);
 			}
 		});
 	}
 
-	createLink(web) {
-		this.draggable = true;
-
-		this.id = web.url;
-		this.innerHTML = web.name;
-
-		this.id = web.url;
-		this.target = '_blank';
-		this.href = web.url;
-		this.innerText = web.name;
+	web(web) {
+		this.web = web;
 	}
 
 	handlerDrop(handler) {
 		this.handlerDrop = handler;
+	}
+
+	handlerUpdate(handler) {
+		this.handlerUpdate = handler;
+	}
+
+	handlerDelete(handler) {
+		this.handlerDelete = handler;
 	}
 }
 
@@ -658,7 +737,7 @@ class CategoryWeb extends HTMLAnchorElement {
 *	categoryNewWeb.handlerAddWeb = handlerAddWeb;
 *	categoryNewWeb.build();
 * */
-class CategoryNewWeb extends HTMLElement {
+class NewWebButton extends HTMLElement {
 	constructor() {
 		super();
 
@@ -677,7 +756,7 @@ class CategoryNewWeb extends HTMLElement {
 
 		const text = document.createElement('p');
 		text.textContent = '+';
-		
+
 		text.addEventListener('click', () => {
 			this.showForm();
 		});
@@ -688,61 +767,14 @@ class CategoryNewWeb extends HTMLElement {
 
 	createForm() {
 
-		// Form
-		const _form = document.createElement('form');
-		_form.style.display = 'flex';
-		_form.style.flexDirection = 'column';
-		_form.addEventListener('submit', event => {
-			event.preventDefault();
-		});
+		const _form = document.createElement(ELEMENT_WEB_FORM);
+		_form.build(
+			null,
+			{ text: ADD, handler: this.handlerAddWeb },
+			null,
+			() => { this.showButton() },
+			this.parentNode.querySelector('category-title span').textContent);
 
-		// Inputs
-		const inputUrl = document.createElement('input');
-		inputUrl.type = 'text';
-		inputUrl.placeholder = 'Url';
-		inputUrl.name = 'url';
-		inputUrl.required = true;
-
-		const inputName = document.createElement('input');
-		inputName.type = 'text';
-		inputName.placeholder = 'Name';
-		inputName.name = 'name';
-		inputName.required = true;
-		inputName.addEventListener('focus', () => {
-			this._inputAutoCompleteName(inputUrl, inputName)
-		});
-
-		// Button Add
-		const buttonAdd = document.createElement('button');
-		buttonAdd.textContent = ADD;
-
-		buttonAdd.addEventListener('click', () => {
-			if (_form.checkValidity()) {
-				this.handlerAddWeb({
-					url: inputUrl.value,
-					name: inputName.value,
-					category: this.parentElement.id ? this.parentElement.id : 'New category'
-				});
-			}
-		});
-
-		// Button Cancel
-		const buttonCancel = document.createElement('button');
-		buttonCancel.textContent = CANCEL;
-		buttonCancel.classList.add('red');
-
-		// Listener click
-		buttonCancel.addEventListener('click', event => {
-			this.showButton();
-		});
-
-		_form.addEventListener('submit', event => {
-			event.preventDefault();
-		});
-
-		// Append
-		_form.append(inputUrl, inputName, buttonAdd, buttonCancel);
-		this._form = _form;
 		return _form;
 	}
 
@@ -758,6 +790,98 @@ class CategoryNewWeb extends HTMLElement {
 		this._form.querySelector('input').focus();
 	}
 
+	// Setter. Gets function for saving webs
+	handlerAddWeb(handler) {
+		this.handlerAddWeb = handler;
+	}
+}
+
+class WebForm extends HTMLElement {
+	constructor() {
+		super();
+	}
+
+	connectedCallback() {
+
+	}
+
+	build(web, affirmativeButton, negativeButton, closeListener, newWebCategory) {
+		// Form
+		const _form = document.createElement('form');
+		_form.style.display = 'flex';
+		_form.style.flexDirection = 'column';
+		_form.addEventListener('submit', event => {
+			event.preventDefault();
+		});
+
+		// When click outside the form, dismiss it
+		_form.addEventListener('focusout', event => {
+			// If the element clicked is the form or a child do nothing, else close form
+			if (_form === event.relatedTarget || _form.contains(event.relatedTarget)) {
+				// do nothing
+			} else {
+				if (closeListener) {
+					closeListener();
+				} else {
+					this.remove();
+				}
+			}
+		});
+
+		// Inputs
+		const inputUrl = document.createElement('input');
+		inputUrl.type = 'text';
+		inputUrl.placeholder = 'Url';
+		inputUrl.name = 'url';
+		inputUrl.required = true;
+		_form.append(inputUrl);
+
+		const inputName = document.createElement('input');
+		inputName.type = 'text';
+		inputName.placeholder = 'Name';
+		inputName.name = 'name';
+		inputName.required = true;
+		inputName.addEventListener('focus', () => {
+			this._inputAutoCompleteName(inputUrl, inputName)
+		});
+		_form.append(inputName);
+
+		if (web) {
+			inputUrl.value = web.url;
+			inputName.value = web.name;
+		}
+
+		if (affirmativeButton) {
+			let button = document.createElement('button');
+			button.textContent = affirmativeButton.text;
+
+			button.addEventListener('click', () => {
+				if (newWebCategory) {
+					affirmativeButton.handler({ name: inputName.value, url: inputUrl.value, category: newWebCategory });
+				} else {
+					affirmativeButton.handler(web.url, { name: inputName.value, url: inputUrl.value, category: web.category });
+				}
+			});
+			_form.append(button);
+		}
+
+		if (negativeButton) {
+			let button = document.createElement('button');
+			button.textContent = negativeButton.text;
+			button.classList.add('red');
+			button.addEventListener('click', () => {
+				if (confirm(`You want to delete ${web.name}?`)) {
+					negativeButton.handler(web.url);
+				}
+			});
+			_form.append(button);
+		}
+
+		this.append(_form);
+
+		inputUrl.focus();
+	}
+
 	// Suggest web name with url domain e.g.: https://www.github.com -> Github
 	_inputAutoCompleteName(inputUrl, inputName) {
 		let url = inputUrl.value;
@@ -769,15 +893,11 @@ class CategoryNewWeb extends HTMLElement {
 			inputName.value = n.charAt(0).toUpperCase() + n.slice(1);
 		}
 	}
-
-	// Setter. Gets function for saving webs
-	handlerAddWeb(handler) {
-		this.handlerAddWeb = handler;
-	}
 }
 
 customElements.define(ELEMENT_CATEGORY_CONTROLLER, CategoryController);
 customElements.define(ELEMENT_CATEGORY_TITLE, CategoryTitle);
-customElements.define(ELEMENT_CATEGORY_LIST, CategoryList, { extends: 'ul'});
-customElements.define(ELEMENT_CATEGORY_WEB, CategoryWeb, { extends: 'a' });
-customElements.define(ELEMENT_CATEGORY_NEW_WEB, CategoryNewWeb);
+customElements.define(ELEMENT_CATEGORY_LIST, CategoryList, { extends: 'ul' });
+customElements.define(ELEMENT_CATEGORY_WEB, CategoryWeb);
+customElements.define(ELEMENT_CATEGORY_NEW_WEB, NewWebButton);
+customElements.define(ELEMENT_WEB_FORM, WebForm);
