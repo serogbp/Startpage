@@ -33,16 +33,38 @@ class Model {
 
 	addWeb(web) {
 		if (!this.isDuplicate(web)) {
-			if(web.category == 'Add a web') web.category = 'New category';
+			web.category = this.categoryName(web.category);
 			this.webs.push(web);
 			this._commit(this.webs);
 		}
 	}
 
+	// Generate name for new categories
+	categoryName(category) {
+		let name = category;
+		if(name != 'Add a website'){
+			// do nothing
+		} else {
+			let flag = false;
+			let counter = 1;
+			while(!flag) {
+				let potentialName = `New category ${counter}`;
+				if(this.webs.find(w => w.category == potentialName)) {
+					counter++;
+				} else {
+					name = potentialName;
+					flag = true;
+				}
+			}
+		}
+
+		return name;
+	}
+
 	isDuplicate(web) {
 		let duplicate = this.webs.find(w => w.url == web.url);
 		if (duplicate) {
-			alert(`The url already exist in: \n${web.category} - ${web.name}`);
+			alert(`The url already exist in: \n${duplicate.category} - ${duplicate.name}`);
 		}
 		return duplicate;
 	}
