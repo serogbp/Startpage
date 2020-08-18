@@ -46,16 +46,13 @@ class View {
 		this.app = this.getElement(ID_ROOT);
 
 		this.header = this.createElement('header');
-
+		
 		// Title
 		this.title = this.createElement('h1');
 		this.title.textContent = `${this._getEmoji()} StartPage ${this._getEmoji()}`;
 
 		// Form for import/export
-		this.formButtons = this.createElement('form');
-		this.formButtons.addEventListener('submit', event => {
-			event.preventDefault();
-		});
+		this.formButtons = this.createElement('div');
 
 		this.buttonImport = this.createElement('button');
 		this.buttonImport.textContent = IMPORT;
@@ -140,15 +137,6 @@ class View {
 		return { url: this.inputUrl.value, name: this.inputName.value, category: this.inputCategory.value };
 	}
 
-	_inputAutoCompleteName(inputUrl, inputName) {
-		let url = inputUrl.value;
-		let name = inputName.value;
-		if (url != "" && name == "") {
-			let n = url.match(/^(?:https?:\/\/)?(?:[^@\/\n]+@)?(?:www\.)?([^.:\/?\n]+)?/)[1];
-			inputName.value = n.charAt(0).toUpperCase() + n.slice(1);
-		}
-	}
-
 	displayWebs(webs) {
 		// Delete all nodes
 		while (this.webContainer.firstChild) {
@@ -157,9 +145,7 @@ class View {
 
 		// Show default message if there are 0 webs
 		if (webs.length === 0) {
-			// Empty category
-			this.webContainer.append(this.createEmptyCategory());
-
+			this.webContainer.append(this.emptyStateCategory());
 		} else {
 			let categories = [];
 
@@ -188,8 +174,16 @@ class View {
 			});
 
 			// Empty category
-			this.webContainer.append(this.createEmptyCategory());
+			this.webContainer.append(this.emptyStateCategory());
 		}
+	}
+
+
+	emptyStateCategory() {
+		let category = document.createElement('category-controller');
+		category.handlerAddWeb = (web) => this.handlerAddWeb(web);
+		category.buildEmptyState();
+		return category;
 	}
 
 	// Get all webs from html and commits them to localStorage in Json format
@@ -245,7 +239,7 @@ class View {
 		this.buttonTheme.addEventListener('click', () => {
 			let body = document.querySelector('body');
 
-			body.className = body.className == DARK_THEME? LIGHT_THEME : DARK_THEME;
+			body.className = body.className == DARK_THEME ? LIGHT_THEME : DARK_THEME;
 
 			this.handlerCommitSettings('theme', body.className);
 		});
@@ -352,10 +346,6 @@ class CategoryController extends HTMLElement {
 		this.header = null;
 		this.content = null;
 		this.footer = null;
-
-		this.handlerAddWeb = null;
-		this.handlerCommit = null;
-		this.handlerDrop = null;
 	}
 
 	connectedCallback() {
@@ -387,6 +377,20 @@ class CategoryController extends HTMLElement {
 
 		this.append(this.header, this.content, this.footer);
 	}
+	
+	buildEmptyState() {
+		this.title = 'Add a website';
+		
+		this.header = document.createElement(ELEMENT_CATEGORY_TITLE);
+		this.header.title = this.title;
+		this.header.buildEmptyState();
+
+		this.footer = document.createElement(ELEMENT_CATEGORY_NEW_WEB);
+		this.footer.handlerAddWeb = this.handlerAddWeb;
+		this.footer.build();
+
+		this.append(this.header, this.footer);
+	}
 
 	title(title) {
 		this.title = title;
@@ -400,12 +404,10 @@ class CategoryController extends HTMLElement {
 		this.content.addWeb(web);
 	}
 
-	// Save web
 	handlerAddWeb(handler) {
 		this.handlerAddWeb = handler;
 	}
 
-	// Save html to json
 	handlerCommit(handler) {
 		this.handlerCommit = handler;
 	}
@@ -418,7 +420,6 @@ class CategoryController extends HTMLElement {
 		this.handlerDelete = handler;
 	}
 
-	// Function for dropping nodes
 	handlerDrop(handler) {
 		this.handlerDrop = handler;
 	}
@@ -457,6 +458,13 @@ class CategoryTitle extends HTMLElement {
 		this.setEvents();
 	}
 
+	buildEmptyState(){
+		// Title
+		const title = document.createElement('span');
+		title.textContent = this.title;
+		this.append(title);
+	}
+
 	setEvents() {
 		// Allow drag elements over this node
 		this.addEventListener('dragover', event => {
@@ -477,16 +485,16 @@ class CategoryTitle extends HTMLElement {
 			let id = event.dataTransfer.getData(DATA_TRANSFER_DRAG_ID);
 			let draggedElement = document.getElementById(id);
 
-			if (draggedElement.tagName === ELEMENT_CATEGORY_CONTROLLER.toUpperCase()) 
-					//Append category before/after current Target
-					this.handlerDrop(draggedElement, event.currentTarget.parentElement)
-			}
+			if (draggedElement.tagName === ELEMENT_CATEGORY_CONTROLLER.toUpperCase())
+				//Append category before/after current Target
+				this.handlerDrop(draggedElement, event.currentTarget.parentElement)
+		}
 		);
 	}
 
 	createTitle() {
 		const title = document.createElement('span');
-		if (this.title) title.textContent = this.title;
+		title.textContent = this.title;
 
 		title.addEventListener('click', () => {
 			this.showInput(title.textContent);
