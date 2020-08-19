@@ -2,6 +2,9 @@
 * CSS Variables
 */
 :root {
+	/* Common */
+	--category-width: 11rem;
+
 	/* Light Theme */
 	--body-primary-light: #ffffff;
 	--body-secondary-light: #f7f7f7;
@@ -50,6 +53,16 @@
 html {
 	font-family: sans-serif;
 	font-size: 1rem;
+	height: 100%;
+	width: 100%;
+}
+
+body {
+	margin: 0;
+	display: flex;
+	min-height: 100%;
+	min-width: 100%;
+
 }
 
 /* 
@@ -58,16 +71,12 @@ html {
 #root {
 	margin: 0;
 }
-.light #root {
+body.light {
 	color: var(--text-primary-light);
 	background: var(--body-secondary-light);
 }
-.dark #root {
+body.dark {
 	background: var(--body-secondary-dark);
-}
-
-body {
-	margin: 0;
 }
 
 /*
@@ -122,11 +131,30 @@ header button {
 }
 
 /* 
+* Empty state
+*/
+.emptyState {
+	position: absolute;
+	width: 100%;
+	margin-top: 15rem;
+	
+	font-size: 2rem;
+	font-weight: bold;
+	text-align: center;
+}
+.light .emptyState  {
+	color: var(--text-primary-light);
+}
+.dark .emptyState {
+	color: var(--text-secondary-dark);
+}
+
+/* 
 * Category controller
 */
 category-controller {
 	margin: 0 1.3rem;
-	width: 11rem;
+	width: var(--category-width);
 }
 
 category-controller ul {
@@ -148,10 +176,6 @@ category-title {
 	color: var(--monokai-gree-dark);
 }
 
-
-category-title:hover {
-	cursor: grab;
-}
 .light category-title:hover {
 	background: var(--body-primary-hover-light);
 }
@@ -173,57 +197,58 @@ category-title input {
 */
 .web {
 	display: flex;
-	padding: 1rem;
-	margin-bottom: 1rem;
+	flex-direction: column;
+	justify-content: space-between;
+	margin-top: 1rem;
 	border-radius: 4px;
+}
 
+.web .web_wrapper {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+.web .web_wrapper a {
+	padding: 1rem;
+	width: 90%;
 	text-decoration: none;
 	cursor: pointer;
-
-	text-decoration: none;
 	word-break: break-word;
+	user-select: none;
 }
 
-.web p {
-	font-weight: lighter;
-	font-size: .6rem;
-	margin: 0;
-	overflow: hidden;
-	word-break: keep-all;
-	display: none;
+.web:hover .web_options{
+	display: flex;
+	flex-direction: row;
 }
 
-.web:hover p {
-	display: block;
+.web:hover .web_options:after {
+	content: '\2807';
 }
 
 category-new-web-button {
 	display: flex;
 	flex-direction: column;
 	user-select: none;
-	margin-bottom: 1rem;
+	margin-top: 1rem;
 	border-radius: 4px;
 
-	/* Without this, the style breaks */	
-	width: inherit;
+	width: var(--category-width);
 }
 
 category-new-web-button p {
 	text-align: center;
 	font-size: x-large;
-	padding: 1rem;
+	padding: .7rem;
 	margin: 0;
 }
 
-category-new-web-button form {
-	padding: 1rem; 
+category-new-web-button form,
+.web form {
+	padding:  1rem;
 }
 
-category-new-web-button [type="text"], category-new-web-button button {
-	margin-bottom: .5rem;
-}
-
-.light .web, 
+.light .web,
 .light category-new-web-button {
 	background: var(--body-primary-light);
 	color: var(--text-primary-light);
@@ -236,6 +261,14 @@ category-new-web-button [type="text"], category-new-web-button button {
 	box-shadow: 0 1px 0 var(--web-shadow-dark);
 }
 
+.light .web a {
+	color: var(--text-primary-light);
+}
+.dark .web a {
+	color: #4797a7;
+}
+
+
 .light .web:hover, 
 .light category-new-web-button:hover {
 	background: var(--body-primary-hover-light);
@@ -246,7 +279,7 @@ category-new-web-button [type="text"], category-new-web-button button {
 	box-shadow: 0 1px 0 var(--body-primary-dark);
 
 }
-.dark .web:hover,
+.dark .web:hover a,
 .dark category-new-web-button:hover {
 	color: var(--monokai-blue);
 }
@@ -257,10 +290,13 @@ category-new-web-button [type="text"], category-new-web-button button {
 form {
 	display: flex;
 }
+form > * {
+	margin-bottom: .5rem;
+}
 
 button,
 [type="text"] {
-	padding: .5rem 1rem;
+	padding: .5rem .5rem;
 	font-size: 1rem;
 	border-radius: 4px;
 }
