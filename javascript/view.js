@@ -539,22 +539,35 @@ class CategoryTitle extends HTMLElement {
 
 	// Save category name changes from the input
 	saveTitle(newTitle) {
-		// If is not empty and not equal to the old name, save
+		// If is not empty and not equal to the old name
 		if (newTitle != "" && this.parent.id != newTitle) {
-			let oldTitle = this.parent.id;
-			try {
-				this.parent.id = newTitle;
-				this.handlerCommit();
-			} catch (error) {
-				this.parent.id = oldTitle;
-				alert(ERROR_SAVE);
-				console.log(`Error saving title changes: ${error.message}`);
-			} finally {
-				this.categoryTitle.textContent = this.parent.id;
+
+			// If no duplicate or duplicate and confirm  merge, save new title
+			if (!this.isDuplicate(newTitle) || confirm(`The category ${newTitle} already exits. Do you want to merge both categories?`)) {
+
+				let oldTitle = this.parent.id;
+				try {
+					this.parent.id = newTitle;
+					this.handlerCommit();
+				} catch (error) {
+					this.parent.id = oldTitle;
+					alert(ERROR_SAVE);
+					console.log(`Error saving title changes: ${error.message}`);
+				} finally {
+					this.categoryTitle.textContent = this.parent.id;
+				}
 			}
 		}
 
 		this.showTitle();
+	}
+
+	// Check if the category already exists
+	// If exists warn than both categories will merge
+	isDuplicate(title) {
+		let categories = document.querySelectorAll(`${ELEMENT_CATEGORY_TITLE} span`);
+		let categoriesDuplicated = Array.prototype.slice.call(categories).filter(c => c.innerText == title);
+		return categoriesDuplicated.length > 0;
 	}
 
 	// Setter. Gets function for saving webs
