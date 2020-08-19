@@ -76,3 +76,8 @@ class Controller {
 
 const app = new Controller(new Model(), new View());
 app.view.searchText.focus();
+
+// Focus when tab is focused
+window.addEventListener('focus', event => {
+	app.view.searchText.select();
+});
