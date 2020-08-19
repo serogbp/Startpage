@@ -178,9 +178,23 @@ class View {
 		}
 	}
 
+	emptyStateMessage() {
+		const div = this.createElement('div', 'emptyState');
+		div.classList.add('emptyState');
+
+		const span = this.createElement('span');
+		span.innerText = '🐪🐫\n';
+		span.style.fontSize = '5rem';
+
+		const span2 = this.createElement('span');
+		span2.innerText = 'It\'s empty here...';
+
+		div.append(span, span2);
+		return div;
+	}
 
 	emptyStateCategory() {
-		let category = document.createElement('category-controller');
+		const category = document.createElement('category-controller');
 		category.handlerAddWeb = (web) => this.handlerAddWeb(web);
 		category.buildEmptyState();
 		return category;
