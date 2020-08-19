@@ -15,11 +15,13 @@ Developed using the **MVC pattern** and **Custom Elements**.
 
 
 # Features
->Open websites the fastest way: write in the search bar + <kbd>TAB</kbd>+<kbd>ENTER</kbd>. The search bar will automatically focus.
+- Open websites the fastest way: write in the search bar + <kbd>TAB</kbd>+<kbd>ENTER</kbd>:
 ![Search web demo](github/SearchWeb.gif)
+The search bar will automatically focus when the page loads.
 
->Arrange websites and categories the way you like
-![Arrange demo](github/Arrange.gif)
+- Arrange websites and categories the way you like:
+<img align="right" src="github/Arrange.gif">
+
 
 ### More features:
 - Dark and light themes
