@@ -20,7 +20,7 @@ Developed using the **MVC pattern** and **Custom Elements**.
 The search bar will automatically focus when the page loads.
 
 - Arrange websites and categories the way you like:
-<img align="right" src="github/Arrange.gif">
+<p align="center"><img align="center" src="github/Arrange.gif"> </p>
 
 
 ### More features:
