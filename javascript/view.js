@@ -1,5 +1,7 @@
 /* Constants */
 
+var VERSION = 'V1.0';
+
 var LIGHT_THEME = 'light';
 var DARK_THEME = 'dark';
 
@@ -46,10 +48,11 @@ class View {
 		this.app = this.getElement(ID_ROOT);
 
 		this.header = this.createElement('header');
-		
+
 		// Title
 		this.title = this.createElement('h1');
-		this.title.textContent = `${this._getEmoji()} StartPage ${this._getEmoji()}`;
+		this.title.textContent = `StartPage`;
+		this.title.title = VERSION;
 
 		// Form for import/export
 		this.formButtons = this.createElement('div');
