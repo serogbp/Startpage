@@ -7,7 +7,7 @@
 
 	/* Light Theme */
 	--body-primary-light: #ffffff;
-	--body-secondary-light: #f7f7f7;
+	--body-secondary-light: rgb(247, 246, 243);
 	--body-primary-hover-light: #e1e1e1;
 
 	--text-primary-light: #444;
@@ -184,10 +184,6 @@ category-title {
 	color:var(--monokai-gree);
 }
 
-category-title span:hover {
-	cursor: text;
-}
-
 category-title input {
 	width: 100%;
 }
@@ -252,13 +248,13 @@ category-new-web-button form,
 .light category-new-web-button {
 	background: var(--body-primary-light);
 	color: var(--text-primary-light);
-	box-shadow: 0 1px 0 var(--web-shadow-light);
+	box-shadow: 0px 2px 3px var(--web-shadow-light);
 }
 .dark .web,
 .dark category-new-web-button {
 	background: var(--body-primary-dark);
 	color: #4797a7;
-	box-shadow: 0 1px 0 var(--web-shadow-dark);
+	box-shadow: 0px 2px 3px var(--web-shadow-dark);
 }
 
 .light .web a {
@@ -276,8 +272,6 @@ category-new-web-button form,
 .dark .web:hover,
 .dark category-new-web-button:hover {
 	background: var(--body-primary-hover-dark);
-	box-shadow: 0 1px 0 var(--body-primary-dark);
-
 }
 .dark .web:hover a,
 .dark category-new-web-button:hover {
