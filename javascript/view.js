@@ -693,6 +693,7 @@ class CategoryWeb extends HTMLElement {
 		link.target = '_blank';
 		link.href = web.url;
 		link.innerText = web.name;
+		link.rel = "noopener noreferrer nofollow";
 
 		return link;
 	}
