@@ -9,7 +9,7 @@
 **Startpage** is a kanban like page where you can save and organize your favorite websites.
 The websites are stored in the browser's Local Storage and they can be exported/imported in JSON format.
 
-Developed using the **MVC pattern** and **Custom Elements**.
+Developed using vanilla Javascript with the **MVC pattern** and **Custom Elements**.
 
 [**Try it on Github Pages**](https://serogbp.github.io/Startpage/)
 
