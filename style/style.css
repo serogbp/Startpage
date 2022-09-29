@@ -265,7 +265,7 @@ category-new-web-button form,
 }
 
 
-.light .web:hover, 
+.light .web:hover,
 .light category-new-web-button:hover {
 	background: var(--body-primary-hover-light);
 }
@@ -340,4 +340,14 @@ button {
 .dark [type="text"]:focus {
 	border: 2px solid var(--monokai-orange);
 	color: var(--monokai-orange);
+}
+
+.warning {
+	background-color: yellow;
+	height: 50px;
+	display:flex;
+	align-items: center;
+	align-content: center;
+	justify-content: center;
+	padding: 1em;
 }

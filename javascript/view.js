@@ -11,6 +11,7 @@ var CLASS_WEB = '.web';
 var CLASS_NAME_WEB_CONTAINER = 'webContainer';
 var CLASS_NAME_CATEGORY = 'category';
 var CLASS_NAME_WEB = 'web';
+var CLASS_NAME_WARNING = 'warning';
 
 var ELEMENT_CATEGORY_CONTROLLER = 'category-controller';
 var ELEMENT_CATEGORY_TITLE = 'category-title';
@@ -82,7 +83,8 @@ class View {
 
 		this.header.append(
 			this.formButtons,
-			this.title,
+			// this.title,
+			this.createWarning(),
 			this.searchText
 		)
 
@@ -90,6 +92,16 @@ class View {
 			this.header,
 			this.webContainer
 		)
+	}
+
+	createWarning() {
+		const warning = this.createElement('div', CLASS_NAME_WARNING)
+		const link = this.createElement('a')
+		link.textContent = "😱 This site is going to change url soon. Make a backup of your webs and bookmark the repository so you don't lose it. 😱"
+		link.href = "https://github.com/serogbp/Startpage"
+
+		warning.append ( link )
+		return warning
 	}
 
 	setTheme() {
