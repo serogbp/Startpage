@@ -65,7 +65,7 @@ body {
 
 }
 
-/* 
+/*
 * Root
 */
 #root {
@@ -116,13 +116,13 @@ header button {
 	color: var(--monokai-pink);
 }
 
-/* 
+/*
 * Web container
 */
 .webContainer {
 	/* Because of the fixed position of header */
 	padding-top: 5rem;
-	
+
 	display: flex;
 	align-content: flex-start;
 	align-items: flex-start;
@@ -130,14 +130,14 @@ header button {
 	justify-content: flex-start;
 }
 
-/* 
+/*
 * Empty state
 */
 .emptyState {
 	position: absolute;
 	width: 100%;
 	margin-top: 15rem;
-	
+
 	font-size: 2rem;
 	font-weight: bold;
 	text-align: center;
@@ -149,7 +149,7 @@ header button {
 	color: var(--text-secondary-dark);
 }
 
-/* 
+/*
 * Category controller
 */
 category-controller {

@@ -83,8 +83,8 @@ class View {
 
 		this.header.append(
 			this.formButtons,
-			// this.title,
-			this.createWarning(),
+			this.title,
+			//this.createWarning(),
 			this.searchText
 		)
 
@@ -357,9 +357,9 @@ class View {
 	}
 }
 
-/* 
+/*
 * Custom element that wraps all Category custom elements
-* 
+*
 * Example of instantiation:
 *	const category = document.createElement('category-controller');
 *	category.title = web.category;
@@ -455,7 +455,7 @@ class CategoryController extends HTMLElement {
 	}
 }
 
-/* 
+/*
 * Custom element title for the category element.
 * On click it transforms into an input allowing editing the category name.
 * On blur or keypress == Enter transforms back to title.
@@ -658,7 +658,7 @@ class CategoryList extends HTMLUListElement {
 /*
 * Custom element that contains a website
 * Can changes it's position with other CategoryWeb by drag and drop
-* 
+*
 * Example of instantiation:
 *	var categoryWeb = document.createElement('a', { is: 'category-web' });
 *	categoryWeb.handlerDrop = handlerDrop;
@@ -747,7 +747,7 @@ class CategoryWeb extends HTMLElement {
 		});
 
 		this.addEventListener('drop', (event) => {
-			// Prevent loading link	
+			// Prevent loading link
 			event.preventDefault();
 
 			let id = event.dataTransfer.getData(DATA_TRANSFER_DRAG_ID);
@@ -776,14 +776,14 @@ class CategoryWeb extends HTMLElement {
 	}
 }
 
-/* 
+/*
 * Custom element for adding new webs.
-* Placed at the bottom of each category with the '+' symbol. 
-* 
+* Placed at the bottom of each category with the '+' symbol.
+*
 * On click transforms into an form to type url and name of the new website.
 * Has an Add button that saves the new website and a Cancel button that
 * reverts the element to the original state.
-* 
+*
 * Example of instantiation:
 *	categoryNewWeb = document.createElement('category-new-web-button');
 *	categoryNewWeb.handlerAddWeb = handlerAddWeb;
