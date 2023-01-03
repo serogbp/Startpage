@@ -2,7 +2,9 @@
 
 ![version](https://img.shields.io/badge/version-v1.0-blue)
 
-![Showcase](github/Demo.png)
+![Showcase dark theme](github/DemoDark.png)
+
+![Showcase light theme](github/Demo.png)
 
 
 # Description
